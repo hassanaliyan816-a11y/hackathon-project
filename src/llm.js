@@ -4,7 +4,8 @@ const { PLACES, TYPES } = require('./campus');
 const state = { lastError: null, calls: 0, ok: 0 };
 
 function enabled() {
-  return !!process.env.OPENROUTER_API_KEY && process.env.REPORTFIX_NO_LLM !== '1';
+  if (process.env.REPORTFIX_NO_LLM === '1') return false;
+  return ['GEMINI_API_KEY', 'GROQ_API_KEY', 'CEREBRAS_API_KEY', 'MISTRAL_API_KEY', 'OPENROUTER_API_KEY'].some(k => !!process.env[k]);
 }
 
 const TYPE_LIST = Object.keys(TYPES).filter(t => t !== 'harassment');
@@ -38,22 +39,33 @@ function parseJson(s) {
   return null;
 }
 
-// Models are tried in order (LLM_MODELS, comma separated; falls back to LLM_MODEL). Free models are often rate-limited upstream,
-// so a model that fails is skipped for a short cooldown and the next one is tried. A model that worked is tried first next time.
-const DEFAULT_MODELS = 'baidu/ernie-5.5-flash-preview:free,openrouter/free,google/gemma-4-31b-it:free,inclusionai/ling-3.2-flash:free';
-const modelList = () => (process.env.LLM_MODELS || process.env.LLM_MODEL || DEFAULT_MODELS).split(',').map(s => s.trim()).filter(Boolean);
-const cooldown = new Map(); // model -> time it may be tried again
+// Several providers speak the same "chat completions" format. A model entry is "provider:model" (e.g. gemini:gemini-flash-lite-latest,
+// groq:llama-3.3-70b-versatile); an entry with no provider prefix is an OpenRouter model. Entries whose key is missing are skipped.
+const PROVIDERS = {
+  gemini: { base: 'https://generativelanguage.googleapis.com/v1beta/openai', key: () => process.env.GEMINI_API_KEY },
+  groq: { base: 'https://api.groq.com/openai/v1', key: () => process.env.GROQ_API_KEY },
+  cerebras: { base: 'https://api.cerebras.ai/v1', key: () => process.env.CEREBRAS_API_KEY },
+  mistral: { base: 'https://api.mistral.ai/v1', key: () => process.env.MISTRAL_API_KEY },
+  openrouter: { base: 'https://openrouter.ai/api/v1', key: () => process.env.OPENROUTER_API_KEY, headers: { 'X-Title': 'ReportFix' } },
+};
+const parseEntry = s => { const m = /^(gemini|groq|cerebras|mistral|openrouter):(.+)$/.exec(s); return m ? { provider: m[1], model: m[2], id: s } : { provider: 'openrouter', model: s, id: s }; };
+// Models are tried in order (LLM_MODELS, comma separated). A model that fails (rate limit, empty reply, timeout) is skipped for a short
+// cooldown and the next one is tried; the one that worked last is tried first next time. If all fail the app uses keyword rules.
+const DEFAULT_MODELS = 'gemini:gemini-flash-lite-latest,gemini:gemini-3.5-flash-lite,groq:llama-3.3-70b-versatile,baidu/ernie-5.5-flash-preview:free,openrouter/free,google/gemma-4-31b-it:free';
+const modelList = () => (process.env.LLM_MODELS || process.env.LLM_MODEL || DEFAULT_MODELS).split(',').map(s => s.trim()).filter(Boolean).map(parseEntry).filter(e => PROVIDERS[e.provider].key());
+const cooldown = new Map(); // entry id -> time it may be tried again
 let lastGood = null;
 
-async function callModel(model, messages, json, maxTokens) {
+async function callModel(entry, messages, json, maxTokens) {
+  const model = entry.id, P = PROVIDERS[entry.provider];
   const ctrl = new AbortController();
   const to = setTimeout(() => ctrl.abort(), +process.env.LLM_TIMEOUT_MS || 9000);
   try {
-    const body = { model, temperature: 0, max_tokens: maxTokens, messages };
+    const body = { model: entry.model, temperature: 0, max_tokens: maxTokens, messages };
     if (json) body.response_format = { type: 'json_object' };
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const res = await fetch(P.base + '/chat/completions', {
       method: 'POST', signal: ctrl.signal,
-      headers: { Authorization: 'Bearer ' + process.env.OPENROUTER_API_KEY, 'Content-Type': 'application/json', 'X-Title': 'ReportFix' },
+      headers: { Authorization: 'Bearer ' + P.key(), 'Content-Type': 'application/json', ...(P.headers || {}) },
       body: JSON.stringify(body),
     });
     if (!res.ok) { state.lastError = `${model} HTTP ${res.status}: ${(await res.text()).slice(0, 120)}`; return { err: res.status }; }
@@ -69,14 +81,15 @@ async function chat(messages, { json = true, maxTokens = 350 } = {}) {
   if (!enabled()) return null;
   state.calls++;
   let models = modelList();
-  if (lastGood && models.includes(lastGood)) models = [lastGood, ...models.filter(m => m !== lastGood)];
+  const good = models.find(m => m.id === lastGood);
+  if (good) models = [good, ...models.filter(m => m !== good)];
   const now = Date.now();
-  const ready = models.filter(m => (cooldown.get(m) || 0) <= now);
+  const ready = models.filter(m => (cooldown.get(m.id) || 0) <= now);
   const tryOrder = (ready.length ? ready : models).slice(0, 3);
-  for (const model of tryOrder) {
-    const r = await callModel(model, messages, json, maxTokens);
-    if (r.content) { state.ok++; state.lastError = null; state.model = model; lastGood = model; return r.content; }
-    cooldown.set(model, Date.now() + (r.err === 429 || r.err === 402 ? 25000 : 8000));
+  for (const entry of tryOrder) {
+    const r = await callModel(entry, messages, json, maxTokens);
+    if (r.content) { state.ok++; state.lastError = null; state.model = entry.id; lastGood = entry.id; return r.content; }
+    cooldown.set(entry.id, Date.now() + (r.err === 429 || r.err === 402 ? 25000 : 8000));
   }
   return null;
 }
