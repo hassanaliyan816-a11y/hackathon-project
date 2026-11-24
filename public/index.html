@@ -3,58 +3,199 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ReportFix</title>
+<title>ReportFix · Campus problems, fixed and verified</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%234f46e5'/%3E%3Cpath d='M9 17l5 5 9-11' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>
-  *{box-sizing:border-box}
-  body{margin:0;font:14px/1.45 system-ui,Segoe UI,Arial,sans-serif;background:#f4f5f7;color:#1b1f24}
-  header{background:#14213d;color:#fff;padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-  header h1{font-size:18px;margin:0 8px 0 0}
-  header select,header input,header button{font:inherit;padding:5px 8px;border-radius:5px;border:1px solid #556;}
-  header button{cursor:pointer;background:#fca311;border-color:#fca311;color:#000}
-  header button.danger{background:#e63946;border-color:#e63946;color:#fff}
-  .judge{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-  .who{margin-left:auto;font-size:13px;opacity:.9}
-  nav{display:flex;gap:4px;padding:8px 16px 0;flex-wrap:wrap;background:#e5e7eb}
-  nav button{border:0;padding:8px 14px;background:#cfd3da;border-radius:6px 6px 0 0;cursor:pointer;font:inherit}
-  nav button.on{background:#fff;font-weight:600}
-  main{padding:16px;max-width:1100px;margin:0 auto}
-  .card{background:#fff;border:1px solid #d9dce2;border-radius:8px;padding:12px;margin-bottom:10px}
-  textarea{width:100%;min-height:80px;font:inherit;padding:8px;border:1px solid #bbb;border-radius:6px}
-  button.pri{background:#14213d;color:#fff;border:0;padding:8px 14px;border-radius:6px;cursor:pointer;font:inherit}
-  button.sm{padding:4px 9px;border:1px solid #888;background:#fff;border-radius:5px;cursor:pointer;font:inherit;margin-right:4px}
-  button.ok{background:#2a9d8f;color:#fff;border-color:#2a9d8f}
-  button.bad{background:#e63946;color:#fff;border-color:#e63946}
-  .chip{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;margin-right:4px;background:#e5e7eb}
-  .critical{background:#e63946;color:#fff}.high{background:#f77f00;color:#fff}.medium{background:#fcbf49}.low{background:#cfe8d5}
-  .st-new{background:#bde0fe}.st-in_progress{background:#ffd6a5}.st-resolved{background:#caffbf}.st-closed{background:#9aa}.st-reopened{background:#ffadad}.st-invalid{background:#bbb}
-  .muted{color:#667}.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:280px}
-  .msg{padding:10px;border-radius:6px;margin-top:10px}
-  .msg.good{background:#e1f5ee}.msg.warn{background:#fff3cd}.msg.err{background:#fde2e4}
-  table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #e0e0e0;padding:5px 8px;text-align:left;vertical-align:top}
-  .hist{font-size:12px;color:#556;margin:6px 0 0 16px;padding:0}
-  .places button{margin:2px}
-  small{color:#667}
+:root{
+  --ink:#0f172a; --ink2:#475569; --ink3:#94a3b8; --line:#e2e8f0; --bg:#f4f6fb; --card:#ffffff;
+  --brand:#4f46e5; --brand2:#7c3aed; --accent:#06b6d4;
+  --critical:#e11d48; --high:#f97316; --medium:#f59e0b; --low:#10b981;
+  --good:#059669; --bad:#e11d48; --r:16px;
+  --shadow:0 1px 2px rgba(15,23,42,.05),0 8px 24px -8px rgba(15,23,42,.12);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:15px/1.55 Inter,"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg);
+  background-image:radial-gradient(900px 420px at 85% -80px,rgba(124,58,237,.14),transparent 60%),radial-gradient(700px 380px at -5% 0,rgba(6,182,212,.12),transparent 55%);
+  background-repeat:no-repeat;min-height:100vh}
+button,input,select,textarea{font:inherit;color:inherit}
+
+/* ---------- header ---------- */
+header{position:relative;z-index:20;background:linear-gradient(120deg,#1e1b4b 0%,#312e81 55%,#4c1d95 100%);color:#fff;box-shadow:0 8px 30px -10px rgba(30,27,75,.6)}
+.hwrap{max-width:1180px;margin:0 auto;padding:12px 20px;display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.brand{display:flex;align-items:center;gap:12px;margin-right:auto}
+.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#a855f7);display:grid;place-items:center;box-shadow:0 6px 18px -4px rgba(168,85,247,.7)}
+.brand h1{font-size:21px;margin:0;letter-spacing:-.02em;line-height:1.1}
+.brand small{display:block;color:#c7d2fe;font-size:12px;letter-spacing:.02em}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.actas{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:5px 6px 5px 6px;backdrop-filter:blur(6px)}
+.avatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;color:#fff;flex:none}
+.actas select{background:transparent;border:0;color:#fff;font-weight:600;padding:4px 6px;outline:none;cursor:pointer;max-width:210px}
+.actas select option,.actas select optgroup{color:#0f172a;background:#fff}
+.tools input{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:8px 12px;color:#fff;outline:none;width:150px}
+.tools input::placeholder{color:#c7d2fe}
+.tools input:focus{border-color:#a5b4fc;background:rgba(255,255,255,.18)}
+.hbtn{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff;border-radius:12px;padding:8px 13px;cursor:pointer;font-weight:600;transition:.15s}
+.hbtn:hover{background:rgba(255,255,255,.22)}
+.hbtn.go{background:linear-gradient(135deg,#f59e0b,#f97316);border-color:transparent;color:#1c1917}
+.hbtn.go:hover{filter:brightness(1.07)}
+.hbtn.danger{background:rgba(244,63,94,.18);border-color:rgba(251,113,133,.5);color:#ffe4e6}
+.hbtn.danger:hover{background:rgba(244,63,94,.4)}
+.whoRow{max-width:1180px;margin:0 auto;padding:0 20px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:#e0e7ff}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2)}
+
+/* ---------- tabs ---------- */
+nav{max-width:1180px;margin:18px auto 0;padding:0 20px}
+.seg{display:inline-flex;gap:4px;padding:5px;background:#e8ebf5;border-radius:14px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:9px 16px;border-radius:10px;cursor:pointer;font-weight:600;color:var(--ink2);transition:.15s}
+.seg button:hover{color:var(--ink)}
+.seg button.on{background:#fff;color:var(--brand);box-shadow:0 2px 8px -2px rgba(15,23,42,.18)}
+main{max-width:1180px;margin:0 auto;padding:18px 20px 60px}
+
+/* ---------- generic ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;margin-bottom:14px;animation:rise .35s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+h2{font-size:26px;letter-spacing:-.02em;margin:0 0 4px}
+h3{font-size:17px;margin:0 0 10px}
+.muted{color:var(--ink2)}.tiny{font-size:12.5px;color:var(--ink3)}
+.btn{border:0;border-radius:12px;padding:10px 18px;font-weight:700;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:8px}
+.btn.pri{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;box-shadow:0 8px 20px -8px rgba(79,70,229,.7)}
+.btn.pri:hover{transform:translateY(-1px);filter:brightness(1.06)}
+.btn:disabled{opacity:.6;cursor:wait;transform:none}
+.sbtn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 13px;cursor:pointer;font-weight:600;font-size:13.5px;transition:.15s;margin:2px 4px 2px 0}
+.sbtn:hover{border-color:var(--brand);color:var(--brand)}
+.sbtn.ok{background:var(--good);color:#fff;border-color:var(--good)}.sbtn.ok:hover{filter:brightness(1.08);color:#fff}
+.sbtn.bad{background:#fff1f2;color:var(--bad);border-color:#fecdd3}.sbtn.bad:hover{background:var(--bad);color:#fff}
+.sbtn.solid{background:var(--brand);color:#fff;border-color:var(--brand)}.sbtn.solid:hover{color:#fff;filter:brightness(1.08)}
+input.in,select.in,textarea.in{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;outline:none;transition:.15s}
+input.in:focus,select.in:focus,textarea.in:focus{border-color:var(--brand);box-shadow:0 0 0 4px rgba(79,70,229,.13)}
+
+/* ---------- report hero ---------- */
+.hero{background:linear-gradient(135deg,#fff,#f5f3ff);border:1px solid #e0e7ff}
+.hero textarea{min-height:120px;resize:vertical;font-size:16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
+.ex{border:1px dashed #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;transition:.15s}
+.ex:hover{background:#e0e7ff;border-style:solid}
+.places{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.place{background:#fff;border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:12.5px;color:var(--ink2)}
+button.place{cursor:pointer}button.place:hover{border-color:var(--brand);color:var(--brand)}
+.result{margin-top:16px;border-radius:14px;padding:16px;border:1px solid}
+.result.good{background:#ecfdf5;border-color:#a7f3d0}.result.warn{background:#fffbeb;border-color:#fde68a}.result.err{background:#fff1f2;border-color:#fecdd3}.result.conf{background:#f5f3ff;border-color:#ddd6fe}
+.result h4{margin:0 0 10px;font-size:16px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:8px 0}
+.fact{background:#fff;border:1px solid rgba(15,23,42,.07);border-radius:12px;padding:9px 12px}
+.fact span{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);font-weight:700}
+.fact b{font-size:15px}
+.spin{width:16px;height:16px;border:2.5px solid rgba(79,70,229,.25);border-top-color:var(--brand);border-radius:50%;display:inline-block;animation:sp .7s linear infinite;vertical-align:-3px;margin-right:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ---------- badges ---------- */
+.b{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.02em;margin:0 4px 4px 0;white-space:nowrap}
+.b.critical{background:var(--critical);color:#fff}.b.high{background:var(--high);color:#fff}.b.medium{background:#fef3c7;color:#92400e}.b.low{background:#d1fae5;color:#065f46}
+.b.st-new{background:#dbeafe;color:#1e40af}.b.st-in_progress{background:#ffedd5;color:#9a3412}.b.st-resolved{background:#d1fae5;color:#065f46}
+.b.st-closed{background:#e2e8f0;color:#334155}.b.st-reopened{background:#ffe4e6;color:#9f1239}.b.st-invalid{background:#e2e8f0;color:#64748b;text-decoration:line-through}
+.b.dept{background:#ede9fe;color:#5b21b6}.b.flag{background:#fee2e2;color:#991b1b}.b.you{background:#e0f2fe;color:#075985}.b.neutral{background:#f1f5f9;color:#475569}
+.b.conf{background:#4c1d95;color:#fff}
+
+/* ---------- issue cards ---------- */
+.issue{position:relative;padding-left:22px;overflow:hidden}
+.issue::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--bar,#cbd5e1)}
+.issue.t-critical{--bar:var(--critical)}.issue.t-high{--bar:var(--high)}.issue.t-medium{--bar:var(--medium)}.issue.t-low{--bar:var(--low)}
+.issue.confc{--bar:#6d28d9;background:linear-gradient(135deg,#fff,#faf5ff)}
+.ihead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;margin-bottom:4px}
+.ihead .id{color:var(--ink3);font-weight:700}
+.ihead .ttl{font-weight:700;font-size:16.5px;letter-spacing:-.01em}
+.reason{color:var(--ink2);margin:2px 0 10px}
+.metrics{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 10px}
+.metric{display:inline-flex;align-items:center;gap:6px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:4px 10px;font-size:13px;color:var(--ink2)}
+.metric b{color:var(--ink)}
+.meter{height:7px;border-radius:99px;background:#eef1f7;overflow:hidden;min-width:120px;flex:1;max-width:240px;align-self:center}
+.meter i{display:block;height:100%;border-radius:99px;background:var(--bar,#6366f1);transition:width .5s}
+.vote{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:12px;margin:8px 0}
+.vbar{display:flex;height:10px;border-radius:99px;overflow:hidden;background:#e2e8f0;margin:8px 0}
+.vbar .c{background:var(--good)}.vbar .d{background:var(--bad)}
+.quote{border-left:3px solid #c7d2fe;background:#f8faff;border-radius:0 10px 10px 0;padding:7px 12px;margin:6px 0;font-size:14px}
+.quote small{display:block;color:var(--ink3);font-weight:600}
+.acts{margin-top:10px;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.acts input.in{width:230px;padding:7px 10px;font-size:13.5px;border-radius:10px}
+.acts select.in{width:auto;padding:7px 10px;font-size:13.5px;border-radius:10px}
+details{margin-top:8px}details summary{cursor:pointer;color:var(--ink3);font-size:13px;font-weight:600;list-style:none}
+details summary::-webkit-details-marker{display:none}details summary::before{content:"▸ ";}details[open] summary::before{content:"▾ ";}
+.tl{list-style:none;margin:8px 0 0 6px;padding:0 0 0 14px;border-left:2px solid var(--line)}
+.tl li{position:relative;font-size:13px;color:var(--ink2);padding:3px 0}
+.tl li::before{content:"";position:absolute;left:-20px;top:10px;width:9px;height:9px;border-radius:50%;background:#a5b4fc;border:2px solid #fff}
+
+/* ---------- stats ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 16px;box-shadow:var(--shadow)}
+.stat span{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);font-weight:700}
+.stat b{display:block;font-size:28px;letter-spacing:-.02em;line-height:1.1}
+.stat.c1 b{color:var(--critical)}.stat.c2 b{color:var(--brand)}.stat.c3 b{color:var(--good)}.stat.c4 b{color:var(--high)}
+
+/* ---------- trust ---------- */
+.gauge{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.big{font-size:54px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.tbar{height:12px;border-radius:99px;background:linear-gradient(90deg,#fecdd3,#fde68a,#a7f3d0);position:relative;flex:1;min-width:200px}
+.tbar i{position:absolute;top:-5px;width:6px;height:22px;border-radius:4px;background:var(--ink);transform:translateX(-3px)}
+.ledger{width:100%;border-collapse:collapse;margin-top:12px}
+.ledger td,.ledger th{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:14px}
+.ledger th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)}
+.delta{display:inline-block;min-width:42px;text-align:center;border-radius:8px;padding:2px 8px;font-weight:800;font-size:13px}
+.delta.up{background:#d1fae5;color:#065f46}.delta.down{background:#ffe4e6;color:#9f1239}
+.ugrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-bottom:14px}
+.ucard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px}
+.urow{display:flex;align-items:center;gap:10px}
+.mini{height:8px;border-radius:99px;background:#eef1f7;overflow:hidden}.mini i{display:block;height:100%;border-radius:99px}
+
+.empty{text-align:center;padding:46px 20px;color:var(--ink3)}
+.empty svg{opacity:.55;margin-bottom:8px}
+.empty b{display:block;color:var(--ink2);font-size:16px}
+pre.sum{white-space:pre-wrap;background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:14px;font:14px/1.6 inherit;margin:12px 0 0}
+#toast{position:fixed;bottom:22px;left:50%;transform:translate(-50%,20px);background:#1e293b;color:#fff;padding:11px 18px;border-radius:12px;box-shadow:0 14px 34px -8px rgba(15,23,42,.5);opacity:0;pointer-events:none;transition:.25s;z-index:50;font-weight:600;max-width:90vw}
+#toast.show{opacity:1;transform:translate(-50%,0)}#toast.err{background:#be123c}#toast.ok{background:#047857}
+@media (min-width:900px) and (min-height:780px){header{position:sticky;top:0}}
+@media (max-width:900px){.whoRow .hint{display:none}}
+@media (max-width:640px){.hwrap{padding:10px 14px}.brand small{display:none}.tools input{width:120px}main,nav{padding-left:14px;padding-right:14px}h2{font-size:22px}}
 </style>
 </head>
 <body>
 <header>
-  <h1>ReportFix</h1>
-  <div class="judge">
-    <label>Acting as <select id="userSel"></select></label>
-    <input id="newName" placeholder="New student name">
-    <button id="newBtn">+ Create student</button>
-    <button id="resetBtn" class="danger">Reset all data</button>
+  <div class="hwrap">
+    <div class="brand">
+      <div class="logo"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div>
+      <div><h1>ReportFix</h1><small>Campus problems · routed by AI · verified by students</small></div>
+    </div>
+    <div class="tools">
+      <div class="actas" title="Switch to any user in one click (no passwords)"><span class="avatar" id="avatar">?</span>
+        <select id="userSel" aria-label="Acting as"></select></div>
+      <input id="newName" placeholder="New student name" aria-label="New student name">
+      <button class="hbtn go" id="newBtn">+ Create student</button>
+      <button class="hbtn danger" id="resetBtn">Reset all data</button>
+    </div>
   </div>
-  <div class="who" id="who"></div>
+  <div class="whoRow" id="who"></div>
 </header>
-<nav id="tabs"></nav>
-<div id="toast" style="position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:#e63946;color:#fff;padding:8px 14px;border-radius:6px;display:none;z-index:9"></div>
+<nav><div class="seg" id="tabs"></div></nav>
+<div id="toast" role="status"></div>
 <main id="view"></main>
 
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let me = null, users = [], tab = null, places = [], lastReport = null;
+const EXAMPLES = [
+  'Lab 3 mein WiFi nahi chal raha',
+  'There is a small fire near the printer in Lab 2, no rush',
+  'LAB 4 PROJECTOR NOT WORKING!!! URGENT!!!',
+  'Library ka AC kharab hai, bohat garmi hai',
+  'Wifi is not working in Lab 9',
+];
+const ROLE_COLOR = { student: 'linear-gradient(135deg,#06b6d4,#3b82f6)', staff: 'linear-gradient(135deg,#f59e0b,#ef4444)', admin: 'linear-gradient(135deg,#8b5cf6,#ec4899)' };
+const initials = n => String(n || '?').split(/\s+/).filter(w => /^\p{L}/u.test(w.replace(/^\(/, ''))).map(w => w.replace(/^\(/, '')[0]).slice(0, 2).join('').toUpperCase() || '?';
+const avatar = (name, role, size) => `<span class="avatar" style="background:${ROLE_COLOR[role] || '#64748b'}${size ? `;width:${size}px;height:${size}px;font-size:${Math.round(size / 2.6)}px` : ''}">${esc(initials(name))}</span>`;
+const TIER_LABEL = { critical: 'Critical', high: 'High', medium: 'Medium', low: 'Low' };
+const STATUS_LABEL = { new: 'New', in_progress: 'In progress', resolved: 'Resolved - awaiting students', closed: 'Closed (verified)', reopened: 'Reopened', invalid: 'Marked fake' };
 
 async function api(path, opts = {}) {
   const r = await fetch('/api' + path, { method: opts.method || 'GET', headers: { 'Content-Type': 'application/json', 'x-user-id': localStorage.uid || '' }, body: opts.body ? JSON.stringify(opts.body) : undefined });
@@ -63,71 +204,91 @@ async function api(path, opts = {}) {
   return j;
 }
 
-let toastT; function toast(m) { const t = $('#toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(toastT); toastT = setTimeout(() => t.style.display = 'none', 3500); }
+let toastT;
+function toast(m, kind = 'err') { const t = $('#toast'); t.textContent = m; t.className = 'show ' + kind; clearTimeout(toastT); toastT = setTimeout(() => t.className = '', 3200); }
+
 async function loadUsers() {
   users = await api('/users');
   const sel = $('#userSel');
   const groups = { student: 'Students', staff: 'Department staff', admin: 'Admin' };
   sel.innerHTML = Object.entries(groups).map(([role, label]) =>
-    `<optgroup label="${label}">` + users.filter(u => u.role === role).map(u => `<option value="${u.id}">${esc(u.name)}${u.role === 'student' ? ' (trust ' + u.trust + ')' : ''}</option>`).join('') + '</optgroup>').join('');
+    `<optgroup label="${label}">` + users.filter(u => u.role === role).map(u => `<option value="${u.id}">${esc(u.name)}${u.role === 'student' ? ' · trust ' + u.trust : ''}</option>`).join('') + '</optgroup>').join('');
   if (!users.find(u => u.id === localStorage.uid)) localStorage.uid = users.find(u => u.role === 'student').id;
   sel.value = localStorage.uid;
 }
+function paintWho(u) {
+  const av = $('#avatar'); av.style.background = ROLE_COLOR[u.role]; av.textContent = initials(u.name);
+  const roleTxt = u.role === 'staff' ? `${u.dept} staff` : u.role === 'admin' ? 'Admin' : 'Student';
+  $('#who').innerHTML = `<span class="pill">${esc(roleTxt)}</span>` + (u.trust != null ? `<span class="pill">Trust ${u.trust} · vote weight ×${(Math.max(0.1, Math.min(2, u.trust / 50))).toFixed(1)}</span>` : '') +
+    `<span class="hint" style="opacity:.8">Judge mode: switch user above, create a student, or reset the data. No passwords.</span>`;
+}
 async function setUser() {
-  me = await api('/me');
-  $('#who').textContent = `${me.name} · ${me.role}${me.dept ? ' · ' + me.dept : ''}${me.trust != null ? ' · trust ' + me.trust : ''}`;
+  me = await api('/me'); paintWho(me);
   const tabs = me.role === 'student' ? ['Report', 'My issues', 'Public board', 'My trust'] : me.role === 'staff' ? ['Queue'] : ['All issues', 'Confidential', 'Users & trust', 'Trending', 'Summary'];
   if (!tabs.includes(tab)) tab = tabs[0];
-  $('#tabs').innerHTML = tabs.map(t => `<button class="${t === tab ? 'on' : ''}" data-t="${t}">${t}</button>`).join('');
+  $('#tabs').innerHTML = tabs.map(t => `<button class="${t === tab ? 'on' : ''}" data-t="${esc(t)}">${esc(t)}</button>`).join('');
   render();
 }
-$('#tabs').onclick = e => { if (e.target.dataset.t) { tab = e.target.dataset.t; lastReport = null; setUser(); } };
+$('#tabs').onclick = e => { const b = e.target.closest('button'); if (b && b.dataset.t) { tab = b.dataset.t; lastReport = null; setUser(); } };
 $('#userSel').onchange = async e => { localStorage.uid = e.target.value; lastReport = null; await setUser(); };
 $('#newBtn').onclick = async () => {
-  try { const u = await api('/users', { method: 'POST', body: { name: $('#newName').value || 'New Student' } }); $('#newName').value = ''; localStorage.uid = u.id; await loadUsers(); await setUser(); }
+  try { const u = await api('/users', { method: 'POST', body: { name: $('#newName').value || 'New Student' } }); $('#newName').value = ''; localStorage.uid = u.id; await loadUsers(); await setUser(); toast(`Created ${u.name} (trust 50)`, 'ok'); }
   catch (e) { toast(e.message); }
 };
 let resetArmed = false;
 $('#resetBtn').onclick = async () => {
   const b = $('#resetBtn');
-  if (!resetArmed) { resetArmed = true; b.textContent = 'Click again to confirm reset'; setTimeout(() => { resetArmed = false; b.textContent = 'Reset all data'; }, 4000); return; }
+  if (!resetArmed) { resetArmed = true; b.textContent = 'Click again to confirm'; setTimeout(() => { resetArmed = false; b.textContent = 'Reset all data'; }, 4000); return; }
   resetArmed = false; b.textContent = 'Reset all data';
-  await api('/reset', { method: 'POST' }); localStorage.uid = ''; lastReport = null; await loadUsers(); await setUser(); toast('All data reset.');
+  await api('/reset', { method: 'POST' }); localStorage.uid = ''; lastReport = null; await loadUsers(); await setUser(); toast('All data reset', 'ok');
 };
 
-const chip = (cls, t) => `<span class="chip ${cls}">${esc(t)}</span>`;
+const badge = (cls, t) => `<span class="b ${cls}">${esc(t)}</span>`;
+const emptyState = (title, sub) => `<div class="card empty"><svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 9h8M8 13h8M8 17h4"/></svg><b>${esc(title)}</b>${esc(sub || '')}</div>`;
+
 function issueCard(i, mode) {
   if (i.confidential) {
-    return `<div class="card"><b>#${i.id} ${esc(i.title)}</b> ${chip('st-' + i.status, i.status)} ${chip('critical', 'confidential')}
-      <div class="muted">${esc(i.reason || '')}</div>
-      ${(i.texts || []).map(t => `<div style="margin-top:6px"><small>${esc(t.reporter)}</small><br>${esc(t.text)}</div>`).join('')}
-      ${mode === 'admin' && i.status !== 'closed' ? `<div style="margin-top:8px"><button class="sm ok" onclick="act(${i.id},'resolved')">Close case</button></div>` : ''}
-      ${i.history ? `<ul class="hist">${i.history.map(h => `<li>${esc(h.text)}</li>`).join('')}</ul>` : ''}</div>`;
+    return `<div class="card issue confc"><div class="ihead"><span class="id">#${i.id}</span><span class="ttl">${esc(i.title)}</span> ${badge('conf', 'Confidential')} ${badge('st-' + i.status, STATUS_LABEL[i.status] || i.status)}</div>
+      <div class="reason">${esc(i.reason || '')}</div>
+      ${(i.texts || []).map(t => `<div class="quote"><small>${esc(t.reporter)}</small>${esc(t.text)}</div>`).join('')}
+      ${mode === 'admin' && i.status !== 'closed' ? `<div class="acts"><button class="sbtn ok" onclick="act(${i.id},'resolved')">Close case</button></div>` : ''}
+      ${i.history ? `<details><summary>Activity</summary><ul class="tl">${i.history.map(h => `<li>${esc(h.text)}</li>`).join('')}</ul></details>` : ''}</div>`;
   }
   const staffLike = me.role === 'staff' || me.role === 'admin';
   let acts = '';
   if (me.role === 'student') {
-    if (i.canJoin) acts += `<button class="sm" onclick="join(${i.id})">Me too (${i.supporters})</button>`;
-    if (i.canVote) acts += `<span class="muted">Is it really fixed? </span><button class="sm ok" onclick="vote(${i.id},'confirm')">Confirm fixed</button><button class="sm bad" onclick="vote(${i.id},'dispute')">Still broken</button>`;
-    if (i.myVote) acts += chip('', 'You voted: ' + i.myVote);
+    if (i.canJoin) acts += `<button class="sbtn solid" onclick="join(${i.id})">Me too · I'm affected (${i.supporters})</button>`;
+    if (i.canVote) acts += `<button class="sbtn ok" onclick="vote(${i.id},'confirm')">Confirm it's fixed</button><button class="sbtn bad" onclick="vote(${i.id},'dispute')">Still broken</button>`;
+    if (i.myVote) acts += badge('neutral', 'You voted: ' + (i.myVote === 'confirm' ? 'fixed' : 'still broken'));
   } else {
-    if (['new', 'reopened'].includes(i.status)) acts += `<button class="sm" onclick="act(${i.id},'in_progress')">Start work</button>`;
-    if (['new', 'in_progress', 'reopened'].includes(i.status)) acts += `<input id="note-${i.id}" placeholder="What was done? (shown to students)" style="padding:4px;width:230px"> <button class="sm ok" onclick="resolve(${i.id})">Mark resolved</button>`;
-    if (!['closed', 'invalid'].includes(i.status)) acts += `<button class="sm bad" onclick="act(${i.id},'invalid')">Mark fake/spam</button>`;
-    if (me.role === 'admin') acts += `<select onchange="reassign(${i.id},this.value)"><option value="">Reassign…</option>${['EE', 'CSE', 'IS', 'Library', 'Cafeteria', 'Labs'].map(d => `<option>${d}</option>`).join('')}</select>`;
+    if (['new', 'reopened'].includes(i.status)) acts += `<button class="sbtn solid" onclick="act(${i.id},'in_progress')">Start work</button>`;
+    if (['new', 'in_progress', 'reopened'].includes(i.status)) acts += `<input class="in" id="note-${i.id}" placeholder="What was done? (shown to students)"> <button class="sbtn ok" onclick="resolve(${i.id})">Mark resolved</button>`;
+    if (!['closed', 'invalid'].includes(i.status)) acts += `<button class="sbtn bad" onclick="act(${i.id},'invalid')">Mark fake / spam</button>`;
+    if (me.role === 'admin') acts += `<select class="in" onchange="reassign(${i.id},this.value)"><option value="">Reassign…</option>${['EE', 'CSE', 'IS', 'Library', 'Cafeteria', 'Labs'].map(d => `<option>${d}</option>`).join('')}</select>`;
   }
-  return `<div class="card">
-    <div><b>#${i.id} ${esc(i.title)}</b> ${chip(i.tier, i.tier + (i.tier !== i.baseTier ? ' (raised by crowd)' : ''))} ${chip('st-' + i.status, i.status)} ${chip('', i.dept)}
-      ${i.safety ? chip('critical', 'safety') : ''}${i.brigading ? chip('critical', 'brigading flag') : ''}${i.reopenCount ? chip('st-reopened', 'reopened ×' + i.reopenCount) : ''}${i.mine ? chip('', 'you reported/joined') : ''}</div>
-    <div class="muted">${esc(i.reason || '')}</div>
-    <div><small>${i.supporters} student(s) affected · weighted support ${i.weightedSupport} · ${i.credibleSupporters} credible · score ${i.score}</small></div>
-    ${i.resolvedNote ? `<div><small>Staff note: ${esc(i.resolvedNote)}</small></div>` : ''}
-    ${i.voteProgress ? `<div><small>Verification: ${i.voteProgress.confirms} confirm / ${i.voteProgress.disputes} dispute of ${i.voteProgress.affected} affected</small></div>` : ''}
-    ${staffLike && i.texts ? i.texts.slice(0, 4).map(t => `<div style="margin-top:4px"><small>${t.reporter ? esc(t.reporter) + ': ' : ''}${t.injection ? '[contained instructions - ignored] ' : ''}</small>“${esc(t.text)}”</div>`).join('') : ''}
-    ${me.role === 'admin' && i.supporterList ? `<small>Supporters: ${i.supporterList.map(s => esc(s.name) + ' (' + s.trust + ')').join(', ')}</small>` : ''}
-    ${acts ? `<div style="margin-top:8px">${acts}</div>` : ''}
-    ${i.history ? `<ul class="hist">${i.history.slice(-5).map(h => `<li>${esc(h.text)}</li>`).join('')}</ul>` : ''}
+  const vp = i.voteProgress;
+  const vote = vp ? `<div class="vote"><b>Did the fix work?</b> <span class="tiny">${vp.affected} affected student(s) decide</span>
+      <div class="vbar"><div class="c" style="width:${vp.affected ? vp.confirms / vp.affected * 100 : 0}%"></div><div class="d" style="width:${vp.affected ? vp.disputes / vp.affected * 100 : 0}%"></div></div>
+      <span class="tiny">${vp.confirms} confirm · ${vp.disputes} dispute · ${Math.max(0, vp.affected - vp.confirms - vp.disputes)} waiting</span>${i.resolvedNote ? `<div class="tiny" style="margin-top:4px">Staff note: ${esc(i.resolvedNote)}</div>` : ''}</div>` : '';
+  const raised = i.tier !== i.baseTier;
+  return `<div class="card issue t-${i.tier}">
+    <div class="ihead"><span class="id">#${i.id}</span><span class="ttl">${esc(i.title)}</span></div>
+    <div>${badge(i.tier, TIER_LABEL[i.tier] + (raised ? ' ↑ crowd' : ''))}${badge('st-' + i.status, STATUS_LABEL[i.status] || i.status)}${badge('dept', i.dept)}
+      ${i.safety ? badge('flag', 'Safety hazard') : ''}${i.brigading ? badge('flag', 'Brigading suspected') : ''}${i.reopenCount ? badge('st-reopened', 'Reopened ×' + i.reopenCount) : ''}${i.mine ? badge('you', 'You reported / joined') : ''}</div>
+    <div class="reason">${esc(i.reason || '')}</div>
+    <div class="metrics"><span class="metric"><b>${i.supporters}</b> affected</span><span class="metric"><b>${i.credibleSupporters}</b> credible</span><span class="metric">support weight <b>${i.weightedSupport}</b></span>
+      <span class="meter" title="Importance score ${i.score}"><i style="width:${Math.min(100, i.score / 1.2)}%"></i></span></div>
+    ${vote}
+    ${staffLike && i.texts ? i.texts.slice(0, 3).map(t => `<div class="quote"><small>${t.reporter ? esc(t.reporter) + ' · ' : ''}${t.injection ? 'contained instructions - ignored' : 'report'}</small>${esc(t.text)}</div>`).join('') : ''}
+    ${me.role === 'admin' && i.supporterList ? `<div class="tiny">Supporters: ${i.supporterList.map(s => esc(s.name) + ' (trust ' + s.trust + ')').join(', ')}</div>` : ''}
+    ${acts ? `<div class="acts">${acts}</div>` : ''}
+    ${i.history && i.history.length ? `<details><summary>Activity (${i.history.length})</summary><ul class="tl">${i.history.slice(-6).map(h => `<li>${esc(h.text)}</li>`).join('')}</ul></details>` : ''}
   </div>`;
+}
+function statsBar(a) {
+  const open = a.filter(i => ['new', 'in_progress', 'reopened'].includes(i.status));
+  const s = (cls, label, n) => `<div class="stat ${cls}"><span>${label}</span><b>${n}</b></div>`;
+  return `<div class="stats">${s('c2', 'Open issues', open.length)}${s('c1', 'Critical', open.filter(i => i.tier === 'critical').length)}${s('c4', 'Awaiting student check', a.filter(i => i.status === 'resolved').length)}${s('c3', 'Closed (verified)', a.filter(i => i.status === 'closed').length)}</div>`;
 }
 
 // Only touch the page when the content really changed, so live refresh never eats a click.
@@ -138,80 +299,89 @@ async function render() {
   try {
     if (tab === 'Report') {
       if (!places.length) places = (await api('/meta')).places;
-      v.innerHTML = `<div class="card"><h3 style="margin-top:0">Report a campus problem</h3>
-        <p class="muted">English, Roman Urdu or a mix is fine. Say what is wrong and where.</p>
-        <textarea id="txt" placeholder="e.g. Lab 3 mein WiFi nahi chal raha"></textarea>
-        <div style="margin-top:8px"><button class="pri" id="sendBtn">Submit report</button></div>
+      v.innerHTML = `<div class="card hero"><h2>What's broken on campus?</h2>
+        <p class="muted" style="margin:0 0 12px">Write it your way: English, Roman Urdu or a mix, typos and all. Say what is wrong and where.</p>
+        <textarea class="in" id="txt" placeholder="e.g. Lab 3 mein WiFi nahi chal raha"></textarea>
+        <div class="chips"><span class="tiny" style="align-self:center">Try:</span>${EXAMPLES.map(x => `<button class="ex" data-ex="${esc(x)}">${esc(x)}</button>`).join('')}</div>
+        <div style="margin-top:10px"><button class="btn pri" id="sendBtn">Submit report →</button></div>
         <div id="out">${lastReport || ''}</div></div>
-        <small class="muted">Places on this demo campus: ${places.map(p => esc(p.name)).join(', ')}</small>`;
+        <div class="card"><h3>Places on this demo campus</h3><div class="places">${places.map(p => `<span class="place">${esc(p.name)}</span>`).join('')}</div>
+        <p class="tiny" style="margin:10px 0 0">If you name a place that is not here, ReportFix asks you instead of guessing.</p></div>`;
       $('#sendBtn').onclick = submit;
+      document.querySelectorAll('.ex').forEach(b => b.onclick = () => { $('#txt').value = b.dataset.ex; $('#txt').focus(); });
     } else if (tab === 'My issues') {
-      const a = await api('/issues?scope=mine'); v.innerHTML = a.length ? a.map(i => issueCard(i)).join('') : '<p class="muted">You have not reported or joined anything yet.</p>';
+      const a = await api('/issues?scope=mine'); v.innerHTML = a.length ? a.map(i => issueCard(i)).join('') : emptyState('Nothing yet', 'Issues you report or join show up here with live status.');
     } else if (tab === 'Public board') {
-      const a = await api('/issues?scope=public'); v.innerHTML = a.length ? a.map(i => issueCard(i)).join('') : '<p class="muted">No issues yet.</p>';
+      const a = await api('/issues?scope=public'); v.innerHTML = a.length ? `<p class="muted" style="margin-top:0">Most important first. Hit "Me too" if you are affected too.</p>` + a.map(i => issueCard(i)).join('') : emptyState('No issues on the board', 'Be the first to report a problem.');
     } else if (tab === 'My trust') { await showTrust(me.id, v); }
     else if (tab === 'Queue') {
-      const a = await api('/issues?scope=dept'); v.innerHTML = `<h3>${esc(me.dept)} queue (most important first)</h3>` + (a.length ? a.map(i => issueCard(i)).join('') : '<p class="muted">Nothing in your queue.</p>');
+      const a = await api('/issues?scope=dept'); v.innerHTML = `<h2>${esc(me.dept)} queue</h2><p class="muted" style="margin-top:0">Most important first. You only see ${esc(me.dept)} issues.</p>` + statsBar(a) + (a.length ? a.map(i => issueCard(i)).join('') : emptyState('Queue is empty', 'New reports for your department appear here.'));
     } else if (tab === 'All issues') {
-      const a = await api('/issues?scope=dept'); v.innerHTML = a.length ? a.map(i => issueCard(i)).join('') : '<p class="muted">No issues yet.</p>';
+      const a = await api('/issues?scope=dept'); v.innerHTML = `<h2>All departments</h2>` + statsBar(a) + (a.length ? a.map(i => issueCard(i)).join('') : emptyState('No issues yet', 'Switch to a student and file a report.'));
     } else if (tab === 'Confidential') {
-      const a = await api('/issues?scope=confidential'); v.innerHTML = `<p class="muted">Admin-only. Reporter identities are never shown.</p>` + (a.length ? a.map(i => issueCard(i, 'admin')).join('') : '<p class="muted">No confidential cases.</p>');
+      const a = await api('/issues?scope=confidential'); v.innerHTML = `<div class="card" style="background:#faf5ff;border-color:#ddd6fe"><b>Admin-only.</b> <span class="muted">Harassment and ragging cases never appear on a public board, never reach a department, and the reporter is never revealed.</span></div>` + (a.length ? a.map(i => issueCard(i, 'admin')).join('') : emptyState('No confidential cases', ''));
     } else if (tab === 'Users & trust') {
-      const us = await api('/users'); v.innerHTML = `<div class="card"><table><tr><th>Student</th><th>Trust</th><th></th></tr>${us.filter(u => u.role === 'student').map(u => `<tr><td>${esc(u.name)}</td><td>${u.trust}</td><td><button class="sm" onclick="trustFor('${u.id}')">Why this score?</button></td></tr>`).join('')}</table></div><div id="trustBox"></div>`;
+      const us = (await api('/users')).filter(u => u.role === 'student');
+      v.innerHTML = `<h2>Students & trust</h2><div class="ugrid">${us.map(u => `<div class="ucard"><div class="urow">${avatar(u.name, 'student', 38)}<div><b>${esc(u.name)}</b><div class="tiny">trust ${u.trust} · weight ×${Math.max(0.1, Math.min(2, u.trust / 50)).toFixed(1)}</div></div></div>
+        <div class="mini"><i style="width:${u.trust}%;background:${u.trust >= 60 ? '#10b981' : u.trust >= 35 ? '#f59e0b' : '#e11d48'}"></i></div>
+        <button class="sbtn" onclick="trustFor('${u.id}')">Why this score?</button></div>`).join('')}</div><div id="trustBox"></div>`;
     } else if (tab === 'Trending') {
-      const a = await api('/trending'); v.innerHTML = `<p class="muted">Most new "me too" joins in the last hour.</p>` + (a.length ? a.map(i => issueCard(i)).join('') : '<p class="muted">Nothing trending.</p>');
+      const a = await api('/trending'); v.innerHTML = `<h2>Trending</h2><p class="muted" style="margin-top:0">Issues with the most new "me too" joins in the last hour.</p>` + (a.length ? a.map(i => issueCard(i)).join('') : emptyState('Nothing trending', 'Trends appear as students join issues.'));
     } else if (tab === 'Summary') {
-      v.innerHTML = `<div class="card"><button class="pri" id="sumBtn">Generate admin summary</button><pre id="sumOut" style="white-space:pre-wrap"></pre></div>`;
-      $('#sumBtn').onclick = async () => { $('#sumOut').textContent = 'Working…'; const s = await api('/admin/summary', { method: 'POST' }); $('#sumOut').textContent = s.text + `\n\n(source: ${s.source === 'ai' ? 'AI' : 'plain rules'})`; };
+      v.innerHTML = `<div class="card"><h2>Admin summary</h2><p class="muted" style="margin-top:0">A short briefing of what needs attention. Written by AI when available, otherwise by plain rules.</p>
+        <button class="btn pri" id="sumBtn">Generate summary</button><pre class="sum" id="sumOut" style="display:none"></pre></div>`;
+      $('#sumBtn').onclick = async () => { const o = $('#sumOut'); o.style.display = 'block'; o.textContent = 'Working…'; const s = await api('/admin/summary', { method: 'POST' }); o.textContent = s.text + `\n\n(source: ${s.source === 'ai' ? 'AI' : 'plain rules'})`; };
     }
-  } catch (e) { v.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+  } catch (e) { v.innerHTML = `<div class="result err">${esc(e.message)}</div>`; }
 }
 async function showTrust(uid, box) {
-  const t = await api(`/users/${uid}/trust`);
-  box.innerHTML = `<div class="card"><h3 style="margin-top:0">${esc(t.user.name)} · trust ${t.user.trust} · vote weight ${t.user.weight}</h3><p class="muted">${esc(t.explanation)}</p>
-    <table><tr><th>When</th><th>Change</th><th>Why</th></tr>${t.entries.length ? t.entries.map(e => `<tr><td>${new Date(e.ts).toLocaleTimeString()}</td><td><b style="color:${e.delta >= 0 ? '#2a9d8f' : '#e63946'}">${e.delta > 0 ? '+' : ''}${e.delta}</b></td><td>${esc(e.reason)}</td></tr>`).join('') : '<tr><td colspan="3" class="muted">No changes yet. Started at 50.</td></tr>'}</table></div>`;
+  const t = await api(`/users/${uid}/trust`); const tr = t.user.trust;
+  box.innerHTML = `<div class="card"><div class="gauge"><div><div class="big" style="color:${tr >= 60 ? '#059669' : tr >= 35 ? '#d97706' : '#e11d48'}">${tr}</div><div class="tiny">trust score</div></div>
+    <div style="flex:1;min-width:220px"><b>${esc(t.user.name)}</b> <span class="muted">· vote weight ×${t.user.weight}</span><div class="tbar" style="margin-top:12px"><i style="left:${tr}%"></i></div><div class="tiny" style="margin-top:6px">${esc(t.explanation)}</div></div></div>
+    <table class="ledger"><tr><th>When</th><th>Change</th><th>Why</th></tr>${t.entries.length ? t.entries.map(e => `<tr><td class="tiny">${new Date(e.ts).toLocaleTimeString()}</td><td><span class="delta ${e.delta >= 0 ? 'up' : 'down'}">${e.delta > 0 ? '+' : ''}${e.delta}</span></td><td>${esc(e.reason)}</td></tr>`).join('') : '<tr><td colspan="3" class="tiny">No changes yet. Everyone starts at 50.</td></tr>'}</table></div>`;
 }
-window.trustFor = id => showTrust(id, $('#trustBox'));
+window.trustFor = id => { showTrust(id, $('#trustBox')); $('#trustBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); };
 
 async function submit() {
-  const text = $('#txt').value.trim(); if (!text) return;
-  $('#sendBtn').disabled = true; $('#out').innerHTML = '<div class="msg">Understanding your report…</div>';
+  const text = $('#txt').value.trim(); if (!text) return toast('Please describe the problem first.');
+  $('#sendBtn').disabled = true; $('#out').innerHTML = '<div class="result" style="background:#eef2ff;border-color:#c7d2fe"><span class="spin"></span>Understanding your report…</div>';
   try {
     const r = await api('/reports', { method: 'POST', body: { text } });
     let html = '';
     if (r.outcome === 'clarify') {
-      html = `<div class="msg warn"><b>Need one more detail.</b> ${esc(r.message)}<div class="places" style="margin-top:6px">${(r.places || []).map(p => `<button class="sm" onclick="addPlace('${esc(p)}')">${esc(p)}</button>`).join('')}</div></div>`;
+      html = `<div class="result warn"><h4>One more detail, please</h4>${esc(r.message)}<div class="places">${(r.places || []).map(p => `<button class="place" onclick="addPlace('${esc(p)}')">${esc(p)}</button>`).join('')}</div></div>`;
     } else if (r.outcome === 'duplicate' || r.outcome === 'already_joined') {
-      html = `<div class="msg warn">${esc(r.message)}</div>`;
+      html = `<div class="result warn">${esc(r.message)}</div>`;
     } else if (r.issue && r.issue.confidential) {
-      html = `<div class="msg good"><b>Received confidentially.</b> ${esc(r.issue.reason)} Case #${r.issue.id}.</div>`;
+      html = `<div class="result conf"><h4>Received confidentially · Case #${r.issue.id}</h4>${esc(r.issue.reason)}</div>`;
     } else if (r.outcome === 'dispute_via_report') {
-      html = `<div class="msg good">${esc(r.message)}</div>`;
+      html = `<div class="result good">${esc(r.message)}</div>`;
     } else {
       const t = r.triage;
-      html = `<div class="msg good"><b>${r.outcome === 'joined' ? 'Matched an existing issue - you are counted as "me too"' : 'New issue created'} (#${r.issue.id})</b><br>
-        Place: <b>${esc(t.place)}</b> · Problem: <b>${esc(t.type)}</b> · Department: <b>${esc(t.dept)}</b> · Priority: ${chip(r.issue.tier, r.issue.tier)}<br>
-        <span class="muted">Why: ${esc(t.reason)}</span>${t.injectionIgnored ? '<br><b>Note:</b> your text contained instructions to the system. They were ignored and your trust score was reduced.' : ''}<br>
-        <small>${r.issue.supporters} student(s) affected · understood by ${t.usedAI ? 'AI + rules' : 'rules only (AI unavailable)'}</small></div>`;
+      html = `<div class="result good"><h4>${r.outcome === 'joined' ? 'Matched an existing issue: you are counted as "me too"' : 'New issue created'} · #${r.issue.id}</h4>
+        <div class="facts"><div class="fact"><span>Place</span><b>${esc(t.place)}</b></div><div class="fact"><span>Problem</span><b>${esc(t.type)}</b></div><div class="fact"><span>Routed to</span><b>${esc(t.dept)}</b></div><div class="fact"><span>Priority</span>${badge(r.issue.tier, TIER_LABEL[r.issue.tier])}</div></div>
+        <div class="muted">${esc(t.reason)}</div>
+        ${t.injectionIgnored ? '<div style="margin-top:8px"><b>Heads up:</b> your text contained instructions aimed at the system. They were ignored and your trust score went down.</div>' : ''}
+        <div class="tiny" style="margin-top:8px">${r.issue.supporters} student(s) affected · understood by ${t.usedAI ? 'AI + rules' : 'rules only (AI unavailable)'}</div></div>`;
     }
     lastReport = html; $('#out').innerHTML = html;
     if (r.outcome !== 'clarify') { $('#txt').value = ''; }
-    const u = await api('/me'); $('#who').textContent = `${u.name} · ${u.role} · trust ${u.trust}`;
-  } catch (e) { $('#out').innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+    paintWho(await api('/me'));
+  } catch (e) { $('#out').innerHTML = `<div class="result err">${esc(e.message)}</div>`; }
   $('#sendBtn').disabled = false;
 }
-window.addPlace = p => { const t = $('#txt'); t.value = t.value.trim() + ' (' + p + ')'; };
-window.join = async id => { try { await api(`/issues/${id}/join`, { method: 'POST' }); await setUser(); } catch (e) { toast(e.message); } };
-window.vote = async (id, v) => { try { await api(`/issues/${id}/vote`, { method: 'POST', body: { vote: v } }); await setUser(); } catch (e) { toast(e.message); } };
+window.addPlace = p => { const t = $('#txt'); t.value = t.value.trim() + ' (' + p + ')'; t.focus(); };
+window.join = async id => { try { await api(`/issues/${id}/join`, { method: 'POST' }); await setUser(); toast('You are counted on this issue', 'ok'); } catch (e) { toast(e.message); } };
+window.vote = async (id, v) => { try { await api(`/issues/${id}/vote`, { method: 'POST', body: { vote: v } }); await setUser(); toast('Vote recorded', 'ok'); } catch (e) { toast(e.message); } };
 window.act = async (id, status, note) => { try { await api(`/issues/${id}/status`, { method: 'POST', body: { status, note } }); await render(); } catch (e) { toast(e.message); } };
 window.resolve = id => { const el = document.getElementById('note-' + id); act(id, 'resolved', el ? el.value : ''); };
-window.reassign = async (id, dept) => { if (!dept) return; try { await api(`/issues/${id}/reassign`, { method: 'POST', body: { dept } }); await render(); } catch (e) { toast(e.message); } };
+window.reassign = async (id, dept) => { if (!dept) return; try { await api(`/issues/${id}/reassign`, { method: 'POST', body: { dept } }); await render(); toast('Reassigned to ' + dept, 'ok'); } catch (e) { toast(e.message); } };
 
 // live status: refresh the visible list every 4s (never while someone is typing, never on the report form)
 setInterval(async () => {
   const a = document.activeElement;
   if (!me || ['Report', 'Users & trust', 'Summary'].includes(tab) || (a && /INPUT|TEXTAREA|SELECT/.test(a.tagName))) return;
-  try { await render(); const u = await api('/me'); $('#who').textContent = `${u.name} · ${u.role}${u.dept ? ' · ' + u.dept : ''}${u.trust != null ? ' · trust ' + u.trust : ''}`; } catch { }
+  try { await render(); paintWho(await api('/me')); } catch { }
 }, 4000);
 (async () => { await loadUsers(); await setUser(); })();
 </script>
