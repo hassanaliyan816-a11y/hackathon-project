@@ -50,3 +50,6 @@ After staff mark an issue resolved, affected students have 30 minutes (change wi
 ## Word export (admin)
 Admin > All issues: **Export Word (.docx)** on any issue card (confidential cases too, reporter identity withheld) or **Export all active issues**.
 The AI drafts the wording (subject, description of the issue, impact, recommended action) from system data; every count (students who reported/joined, credible supporters, verification confirm/dispute votes) is computed by code, not the AI. If the AI is unavailable a template text is used. Only the admin can export (students and staff get 403).
+
+## AI model (OpenRouter, free models)
+`LLM_MODELS` in `.env` is a comma-separated list tried in order; if one is rate-limited the next is used, and if all fail the app uses keyword rules. Free OpenRouter models are limited to about 50 requests per day until the account has 10 credits (then 1000 per day). Put a paid model first (e.g. `google/gemini-2.5-flash`) when you have credit. Tests run rules-only by default; `TEST_WITH_AI=1 node test/attack.js` uses the AI.

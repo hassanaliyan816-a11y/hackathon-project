@@ -38,27 +38,47 @@ function parseJson(s) {
   return null;
 }
 
-async function chat(messages, { json = true, maxTokens = 350 } = {}) {
-  if (!enabled()) return null;
+// Models are tried in order (LLM_MODELS, comma separated; falls back to LLM_MODEL). Free models are often rate-limited upstream,
+// so a model that fails is skipped for a short cooldown and the next one is tried. A model that worked is tried first next time.
+const DEFAULT_MODELS = 'baidu/ernie-5.5-flash-preview:free,openrouter/free,google/gemma-4-31b-it:free,inclusionai/ling-3.2-flash:free';
+const modelList = () => (process.env.LLM_MODELS || process.env.LLM_MODEL || DEFAULT_MODELS).split(',').map(s => s.trim()).filter(Boolean);
+const cooldown = new Map(); // model -> time it may be tried again
+let lastGood = null;
+
+async function callModel(model, messages, json, maxTokens) {
   const ctrl = new AbortController();
-  const to = setTimeout(() => ctrl.abort(), +process.env.LLM_TIMEOUT_MS || 15000);
-  state.calls++;
+  const to = setTimeout(() => ctrl.abort(), +process.env.LLM_TIMEOUT_MS || 9000);
   try {
-    const body = { model: process.env.LLM_MODEL || 'google/gemini-2.5-flash', temperature: 0, max_tokens: maxTokens, messages };
+    const body = { model, temperature: 0, max_tokens: maxTokens, messages };
     if (json) body.response_format = { type: 'json_object' };
     const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST', signal: ctrl.signal,
       headers: { Authorization: 'Bearer ' + process.env.OPENROUTER_API_KEY, 'Content-Type': 'application/json', 'X-Title': 'ReportFix' },
       body: JSON.stringify(body),
     });
-    if (!res.ok) { state.lastError = `HTTP ${res.status}: ${(await res.text()).slice(0, 160)}`; return null; }
+    if (!res.ok) { state.lastError = `${model} HTTP ${res.status}: ${(await res.text()).slice(0, 120)}`; return { err: res.status }; }
     const j = await res.json();
     const content = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
-    if (!content) { state.lastError = 'empty reply'; return null; }
-    state.ok++; state.lastError = null;
-    return content;
-  } catch (e) { state.lastError = String(e.message || e); return null; }
+    if (!content || !String(content).trim()) { state.lastError = `${model} empty reply`; return { err: 'empty' }; }
+    return { content };
+  } catch (e) { state.lastError = `${model} ${String(e.message || e)}`; return { err: 'net' }; }
   finally { clearTimeout(to); }
+}
+
+async function chat(messages, { json = true, maxTokens = 350 } = {}) {
+  if (!enabled()) return null;
+  state.calls++;
+  let models = modelList();
+  if (lastGood && models.includes(lastGood)) models = [lastGood, ...models.filter(m => m !== lastGood)];
+  const now = Date.now();
+  const ready = models.filter(m => (cooldown.get(m) || 0) <= now);
+  const tryOrder = (ready.length ? ready : models).slice(0, 3);
+  for (const model of tryOrder) {
+    const r = await callModel(model, messages, json, maxTokens);
+    if (r.content) { state.ok++; state.lastError = null; state.model = model; lastGood = model; return r.content; }
+    cooldown.set(model, Date.now() + (r.err === 429 || r.err === 402 ? 25000 : 8000));
+  }
+  return null;
 }
 
 async function extract(text) {

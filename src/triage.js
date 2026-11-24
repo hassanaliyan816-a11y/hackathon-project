@@ -36,9 +36,12 @@ async function triage(rawText) {
   }
 
   // 4) safety: rules always count; AI safety only trusted when the text had no injection attempt
-  let safety = ruleSafety || (!inj.found && ai ? ai.safety_kind : null);
+  // (the AI alone may not declare "structural" danger: small models over-flag broken glass, doors, etc.; keyword rules still can)
+  const aiSafety = !inj.found && ai && ai.safety_kind && ai.safety_kind !== 'structural' ? ai.safety_kind : null;
+  let safety = ruleSafety || aiSafety;
   // AI understands meaning (typos, Roman Urdu); keyword rules are the fallback and the safety floor above
-  const aiType = ai && ai.problem_type && ai.problem_type !== 'other' ? ai.problem_type : null;
+  // (danger types come only from the safety checks above, never from the AI's general "problem_type" guess)
+  const aiType = ai && ai.problem_type && ai.problem_type !== 'other' && !(TYPES[ai.problem_type] && TYPES[ai.problem_type].safety) ? ai.problem_type : null;
   let type = safety || aiType || ruleType || 'other';
   if (TYPES[type] && TYPES[type].confidential) type = 'other';
 

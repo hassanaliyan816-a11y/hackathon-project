@@ -3,6 +3,7 @@
 //       REPORTFIX_NO_LLM=1 node test/attack.js   (rules only)
 const os = require('os'), path = require('path');
 try { process.loadEnvFile(path.join(__dirname, '..', '.env')); } catch { }
+if (process.env.TEST_WITH_AI !== '1') process.env.REPORTFIX_NO_LLM = '1'; // do not spend AI requests unless asked: TEST_WITH_AI=1
 process.env.REPORTFIX_DATA = path.join(os.tmpdir(), 'reportfix-test-' + process.pid + '.json');
 const { start } = require('../src/server');
 
