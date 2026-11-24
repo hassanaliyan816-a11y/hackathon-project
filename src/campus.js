@@ -37,6 +37,8 @@ const TYPES = {
   harassment: { label: 'Confidential case',       tier: 'critical', confidential: true },
 };
 
+// Problem types where different 'things' at the same place are different issues (chair vs window).
+const SUBJECT_TYPES = new Set(['equipment', 'furniture', 'cleanliness', 'security', 'food', 'noise', 'books', 'water', 'other']);
 const TIERS = ['low', 'medium', 'high', 'critical'];
 const SAFETY_KINDS = ['fire', 'gas', 'electrical_hazard', 'medical', 'structural'];
 
@@ -49,4 +51,4 @@ function routeDept(place, type) {
   return place.dept;
 }
 
-module.exports = { DEPTS, PLACES, TYPES, TIERS, SAFETY_KINDS, routeDept };
+module.exports = { SUBJECT_TYPES, DEPTS, PLACES, TYPES, TIERS, SAFETY_KINDS, routeDept };

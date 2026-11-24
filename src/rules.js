@@ -67,17 +67,34 @@ const TYPE_RULES = [
   ['books', /\b(books?|kitab\w*|librarian|journals?|catalog\w*|reading\s+room|borrow\w*|library\s+card)\b/],
   ['noise', /\b(noise|noisy|shor|loud|music|speaker\w*)\b/],
   ['security', /\b(theft|stolen|steal\w*|chori|lost|missing|security\s+guard|guard|cctv|suspicious)\b/],
-  ['furniture', /\b(chairs?|tables?|desks?|bench\w*|kursi|mez|broken\s+(?:door|window|lock)|doors?|windows?|locks?|whiteboard|board|ceiling\s+fan)\b/],
+  ['furniture', /\b(chairs?|tables?|desks?|bench\w*|kursi|mez|khirki|khidki|darwaza\w*|shisha|glass|broken\s+(?:door|window|lock)|doors?|windows?|locks?|whiteboard|board|ceiling\s+fan)\b/],
 ];
 
-function detectType(text) {
+function detectTypeDetail(text) {
   const t = norm(text);
   let best = null;
   for (const [type, re] of TYPE_RULES) {
     const m = re.exec(t);
-    if (m && (best === null || m.index < best.index)) best = { type, index: m.index };
+    if (m && (best === null || m.index < best.index)) best = { type, index: m.index, word: m[0] };
   }
-  return best ? best.type : null;
+  return best;
+}
+function detectType(text) { const b = detectTypeDetail(text); return b ? b.type : null; }
+
+// Short normalised "thing that is broken" used to keep different problems apart (chair vs window vs printer).
+const STOP = new Set(['the', 'a', 'an', 'is', 'are', 'in', 'at', 'on', 'of', 'ka', 'ki', 'ke', 'me', 'mein', 'hai', 'hain', 'nahi', 'not', 'and', 'to', 'for', 'lab', 'library', 'cafeteria', 'block', 'cse', 'ee', 'is', 'bohat', 'very', 'please', 'plz', 'this', 'that', 'there', 'it', 'has', 'have', 'been', 'was', 'with']);
+const ALIAS = { khirki: 'window', khidki: 'window', shisha: 'window', glass: 'window', windows: 'window', darwaza: 'door', darwazah: 'door', kursi: 'chair', kursiyan: 'chair', mez: 'table', pankha: 'fan', kachra: 'garbage', trash: 'garbage', dustbin: 'garbage', gandagi: 'smell', stink: 'smell', bu: 'smell', computer: 'pc', computers: 'pc', laptop: 'pc', pcs: 'pc', nalka: 'tap', paani: 'water', pani: 'water', kitaab: 'book', kitab: 'book', books: 'book' };
+function normSubject(s) {
+  let w = norm(s).replace(/[^a-z\s]/g, ' ').split(' ').filter(x => x && !STOP.has(x));
+  let x = (w[0] || '');
+  if (x.length > 3 && x.endsWith('s') && !x.endsWith('ss')) x = x.slice(0, -1);
+  x = ALIAS[x] || x;
+  return x.slice(0, 20);
+}
+function fallbackSubject(text, detail) {
+  if (detail && detail.word) return normSubject(detail.word);
+  const words = norm(text).replace(/\d+/g, ' ').split(' ').filter(x => x.length > 3 && !STOP.has(x));
+  return normSubject(words[0] || '');
 }
 
 /* ---------------- location ---------------- */
@@ -137,4 +154,4 @@ function locate(text) {
   return { status: 'none' };
 }
 
-module.exports = { norm, detectInjection, detectSafety, detectHarassment, detectType, locate, placeByName, placeById };
+module.exports = { norm, normSubject, fallbackSubject, detectTypeDetail, detectInjection, detectSafety, detectHarassment, detectType, locate, placeByName, placeById };

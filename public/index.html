@@ -48,6 +48,7 @@
   <div class="who" id="who"></div>
 </header>
 <nav id="tabs"></nav>
+<div id="toast" style="position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:#e63946;color:#fff;padding:8px 14px;border-radius:6px;display:none;z-index:9"></div>
 <main id="view"></main>
 
 <script>
@@ -62,6 +63,7 @@ async function api(path, opts = {}) {
   return j;
 }
 
+let toastT; function toast(m) { const t = $('#toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(toastT); toastT = setTimeout(() => t.style.display = 'none', 3500); }
 async function loadUsers() {
   users = await api('/users');
   const sel = $('#userSel');
@@ -83,9 +85,15 @@ $('#tabs').onclick = e => { if (e.target.dataset.t) { tab = e.target.dataset.t; 
 $('#userSel').onchange = async e => { localStorage.uid = e.target.value; lastReport = null; await setUser(); };
 $('#newBtn').onclick = async () => {
   try { const u = await api('/users', { method: 'POST', body: { name: $('#newName').value || 'New Student' } }); $('#newName').value = ''; localStorage.uid = u.id; await loadUsers(); await setUser(); }
-  catch (e) { alert(e.message); }
+  catch (e) { toast(e.message); }
 };
-$('#resetBtn').onclick = async () => { if (!confirm('Reset ALL data to the starting state?')) return; await api('/reset', { method: 'POST' }); localStorage.uid = ''; await loadUsers(); await setUser(); };
+let resetArmed = false;
+$('#resetBtn').onclick = async () => {
+  const b = $('#resetBtn');
+  if (!resetArmed) { resetArmed = true; b.textContent = 'Click again to confirm reset'; setTimeout(() => { resetArmed = false; b.textContent = 'Reset all data'; }, 4000); return; }
+  resetArmed = false; b.textContent = 'Reset all data';
+  await api('/reset', { method: 'POST' }); localStorage.uid = ''; lastReport = null; await loadUsers(); await setUser(); toast('All data reset.');
+};
 
 const chip = (cls, t) => `<span class="chip ${cls}">${esc(t)}</span>`;
 function issueCard(i, mode) {
@@ -104,7 +112,7 @@ function issueCard(i, mode) {
     if (i.myVote) acts += chip('', 'You voted: ' + i.myVote);
   } else {
     if (['new', 'reopened'].includes(i.status)) acts += `<button class="sm" onclick="act(${i.id},'in_progress')">Start work</button>`;
-    if (['new', 'in_progress', 'reopened'].includes(i.status)) acts += `<button class="sm ok" onclick="resolve(${i.id})">Mark resolved</button>`;
+    if (['new', 'in_progress', 'reopened'].includes(i.status)) acts += `<input id="note-${i.id}" placeholder="What was done? (shown to students)" style="padding:4px;width:230px"> <button class="sm ok" onclick="resolve(${i.id})">Mark resolved</button>`;
     if (!['closed', 'invalid'].includes(i.status)) acts += `<button class="sm bad" onclick="act(${i.id},'invalid')">Mark fake/spam</button>`;
     if (me.role === 'admin') acts += `<select onchange="reassign(${i.id},this.value)"><option value="">Reassign…</option>${['EE', 'CSE', 'IS', 'Library', 'Cafeteria', 'Labs'].map(d => `<option>${d}</option>`).join('')}</select>`;
   }
@@ -122,8 +130,11 @@ function issueCard(i, mode) {
   </div>`;
 }
 
+// Only touch the page when the content really changed, so live refresh never eats a click.
+const viewEl = $('#view'); let lastHtml = null;
+const viewProxy = { set innerHTML(h) { if (h === lastHtml) return; lastHtml = h; viewEl.innerHTML = h; }, get innerHTML() { return viewEl.innerHTML; } };
 async function render() {
-  const v = $('#view');
+  const v = viewProxy;
   try {
     if (tab === 'Report') {
       if (!places.length) places = (await api('/meta')).places;
@@ -190,12 +201,18 @@ async function submit() {
   $('#sendBtn').disabled = false;
 }
 window.addPlace = p => { const t = $('#txt'); t.value = t.value.trim() + ' (' + p + ')'; };
-window.join = async id => { try { await api(`/issues/${id}/join`, { method: 'POST' }); await setUser(); } catch (e) { alert(e.message); } };
-window.vote = async (id, v) => { try { await api(`/issues/${id}/vote`, { method: 'POST', body: { vote: v } }); await setUser(); } catch (e) { alert(e.message); } };
-window.act = async (id, status, note) => { try { await api(`/issues/${id}/status`, { method: 'POST', body: { status, note } }); await render(); } catch (e) { alert(e.message); } };
-window.resolve = id => { const note = prompt('What was done? (shown to students)') ; if (note === null) return; act(id, 'resolved', note); };
-window.reassign = async (id, dept) => { if (!dept) return; try { await api(`/issues/${id}/reassign`, { method: 'POST', body: { dept } }); await render(); } catch (e) { alert(e.message); } };
+window.join = async id => { try { await api(`/issues/${id}/join`, { method: 'POST' }); await setUser(); } catch (e) { toast(e.message); } };
+window.vote = async (id, v) => { try { await api(`/issues/${id}/vote`, { method: 'POST', body: { vote: v } }); await setUser(); } catch (e) { toast(e.message); } };
+window.act = async (id, status, note) => { try { await api(`/issues/${id}/status`, { method: 'POST', body: { status, note } }); await render(); } catch (e) { toast(e.message); } };
+window.resolve = id => { const el = document.getElementById('note-' + id); act(id, 'resolved', el ? el.value : ''); };
+window.reassign = async (id, dept) => { if (!dept) return; try { await api(`/issues/${id}/reassign`, { method: 'POST', body: { dept } }); await render(); } catch (e) { toast(e.message); } };
 
+// live status: refresh the visible list every 4s (never while someone is typing, never on the report form)
+setInterval(async () => {
+  const a = document.activeElement;
+  if (!me || ['Report', 'Users & trust', 'Summary'].includes(tab) || (a && /INPUT|TEXTAREA|SELECT/.test(a.tagName))) return;
+  try { await render(); const u = await api('/me'); $('#who').textContent = `${u.name} · ${u.role}${u.dept ? ' · ' + u.dept : ''}${u.trust != null ? ' · trust ' + u.trust : ''}`; } catch { }
+}, 4000);
 (async () => { await loadUsers(); await setUser(); })();
 </script>
 </body>

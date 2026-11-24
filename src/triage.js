@@ -1,7 +1,7 @@
 // Triage = AI extracts facts + rules enforce safety/location/injection; code computes priority and department.
 const R = require('./rules');
 const LLM = require('./llm');
-const { PLACES, TYPES, routeDept } = require('./campus');
+const { PLACES, TYPES, routeDept, SUBJECT_TYPES } = require('./campus');
 
 const clean = s => String(s || '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, ' ').trim().slice(0, 1000);
 
@@ -17,7 +17,8 @@ async function triage(rawText) {
 
   const loc = R.locate(body);
   const ruleSafety = R.detectSafety(body);
-  const ruleType = R.detectType(body);
+  const ruleDetail = R.detectTypeDetail(body);
+  const ruleType = ruleDetail ? ruleDetail.type : null;
 
   // 2) AI extraction (best effort)
   const ai = LLM.enabled() ? await LLM.extract(text) : null;
@@ -50,6 +51,8 @@ async function triage(rawText) {
     return { status: 'clarify', code: locProblem.code, mention: locProblem.mention, message, places, injection: inj.found, safety: !!safety };
   }
 
+  // subject keeps different problems of the same generic type apart (broken chair vs broken window)
+  const subject = SUBJECT_TYPES.has(type) ? (R.normSubject((ai && ai.subject) || '') || R.fallbackSubject(body, ruleDetail && ruleDetail.type === type ? ruleDetail : null)) : '';
   const tier = TYPES[type].tier;
   const dept = routeDept(place, type);
   const label = TYPES[type].label;
@@ -58,7 +61,7 @@ async function triage(rawText) {
             : `${label} at ${place.name}; routed to ${dept}.`);
 
   return {
-    status: 'ok', confidential: false, place, type, label, tier, dept, safety: !!safety,
+    status: 'ok', confidential: false, place, type, subject, label, tier, dept, safety: !!safety,
     reason, language: ai ? ai.language : 'unknown', injection: inj.found, usedAI: !!ai,
     summary: body.slice(0, 160),
   };

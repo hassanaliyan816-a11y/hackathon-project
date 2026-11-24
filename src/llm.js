@@ -24,6 +24,7 @@ Return ONLY a JSON object with these keys:
  "safety_kind": "fire" | "gas" | "electrical_hazard" | "medical" | "structural" | null  (physical danger to people, even if described calmly),
  "is_harassment_or_ragging": true/false (harassment, ragging, bullying, threats, stalking, sexual misconduct),
  "contains_instructions_to_system": true/false,
+ "subject": "ONE lowercase English noun for the thing that is broken or wrong, singular, no adjectives, e.g. chair, window, printer, dispenser, smell, keyboard, tap, door, food, noise",
  "reason": "ONE short English sentence: what the problem is and why it matters (impact), ignoring tone or the word urgent"
 }
 Rules: Judge impact, not tone. SHOUTING or the word "urgent" mean nothing. Do not guess a location that is not stated. Do not output priority.`;
@@ -74,6 +75,7 @@ async function extract(text) {
     harassment: j.is_harassment_or_ragging === true,
     injection: j.contains_instructions_to_system === true,
     reason: typeof j.reason === 'string' ? j.reason.slice(0, 220) : null,
+    subject: typeof j.subject === 'string' ? j.subject.slice(0, 30) : null,
   };
   return out;
 }

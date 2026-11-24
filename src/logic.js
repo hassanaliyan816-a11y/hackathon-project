@@ -129,10 +129,12 @@ async function submitReport(user, text) {
   return placeReport(user, text, t, Date.now());
 }
 
+const groupKey = t => `${t.place.id}|${t.type}|${t.subject || ''}`;
+
 function newIssue(user, text, t, now) {
   const d = db();
   const issue = {
-    id: d.seq.issue++, key: t.confidential ? null : `${t.place.id}|${t.type}`,
+    id: d.seq.issue++, key: t.confidential ? null : groupKey(t),
     placeId: t.place ? t.place.id : null, type: t.type, dept: t.dept, confidential: !!t.confidential,
     reason: t.reason, status: 'new', reopenCount: 0, createdAt: now,
     reports: [], supporters: [], votes: {}, resolvedAt: null, resolvedNote: null, history: [], flags: {}, summary: t.summary, safety: !!t.safety,
@@ -148,7 +150,7 @@ function placeReport(user, text, t, now) {
   let issue = null, outcome = 'created';
 
   if (!t.confidential) {
-    const sameKey = d.issues.filter(i => !i.confidential && i.key === `${t.place.id}|${t.type}`);
+    const sameKey = d.issues.filter(i => !i.confidential && i.key === groupKey(t));
     issue = sameKey.find(i => OPEN.includes(i.status));
     const resolved = sameKey.find(i => i.status === 'resolved');
     if (!issue && resolved) {
@@ -273,7 +275,7 @@ function viewIssue(issue, viewer) {
     return null;
   }
   const v = {
-    id: issue.id, confidential: false, title: `${TYPES[issue.type].label} - ${placeName(issue)}`, type: issue.type, typeLabel: TYPES[issue.type].label,
+    id: issue.id, confidential: false, title: `${TYPES[issue.type].label}${issue.key && issue.key.split('|')[2] ? ' (' + issue.key.split('|')[2] + ')' : ''} - ${placeName(issue)}`, type: issue.type, typeLabel: TYPES[issue.type].label,
     place: placeName(issue), dept: issue.dept, status: issue.status, baseTier: imp.baseTier, tier: imp.tier, score: imp.score,
     supporters: imp.distinct, weightedSupport: imp.weighted, credibleSupporters: imp.credible, brigading: imp.brigading, safety: issue.safety,
     reason: issue.reason, reopenCount: issue.reopenCount, resolvedNote: issue.resolvedNote, createdAt: issue.createdAt, mine: mineSup,

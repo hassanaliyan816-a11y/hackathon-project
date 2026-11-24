@@ -34,6 +34,14 @@ async function report(uid, text) { return (await call(uid, 'POST', '/reports', {
   r = await report((await newStudent('Typo Tester')), 'proyector not wrking in CSE lab');
   check('typo report routed to CSE', r.triage && r.triage.dept === 'CSE' && r.triage.place === 'CSE Lab', r);
 
+  console.log('\n[1b] different things at one place stay separate; paraphrases group');
+  const g = await newStudent('Grouper'), g2 = await newStudent('Grouper2');
+  const w1 = await report(g, 'Lab 5 ki khirki toot gayi hai');
+  const w2 = await report(g, 'There is a bad smell of garbage in Lab 5');
+  check('broken window and bad smell at Lab 5 are two issues', w1.issue && w2.issue && w1.issue.id !== w2.issue.id, { a: w1.issue && w1.issue.title, b: w2.issue && w2.issue.title });
+  const w3 = await report(g2, 'window glass is broken in lab 5');
+  check('window paraphrase (Roman Urdu vs English) groups with the first window report', w3.issue && w1.issue && w3.issue.id === w1.issue.id, { w1: w1.issue && w1.issue.title, w3: w3.issue && w3.issue.title });
+
   console.log('\n[2] impact over tone');
   const calm = await newStudent('Calm');
   r = await report(calm, 'There is a small fire near the printer in Lab 2, no rush at all');
