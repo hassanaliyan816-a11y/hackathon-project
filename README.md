@@ -1,14 +1,41 @@
-# Hackathon Project
-TBD one-line description.
+# ReportFix (CodeQuest 2026 - AI module)
 
-## Setup
-TBD exact commands (fill after Prompt 02).
+Students report campus problems (English / Roman Urdu / mixed). AI extracts the facts, plain code does the
+routing, grouping, priority, trust and permissions. Departments act; affected students confirm or dispute fixes.
 
-## Run
-TBD
+## Run (needs Node 22+, no npm install)
+```
+copy .env.example .env      # then put your OpenRouter key in .env (optional: without it the app uses keyword rules only)
+npm start                   # http://localhost:3000
+npm test                    # attack tests (AI on if key present; REPORTFIX_NO_LLM=1 for rules only)
+```
 
-## Test
-TBD
+## For judges (top bar of the app)
+- **Acting as** dropdown: switch to any student, department staff or admin in one click, no passwords.
+- **+ Create student**: instant new account (trust starts at 50).
+- **Reset all data**: back to the starting seed.
 
-## Demo steps
-TBD
+## How the work is split (AI vs code)
+| AI (OpenRouter, text understanding only) | Plain code (deterministic) |
+|---|---|
+| language, problem type, place named, safety danger, harassment, "is this an instruction to the system", one-line reason | safety floor keywords (EN + Roman Urdu), place validation against the campus list, department routing table, priority tiers, grouping key (place + type), trust ledger, weighted votes, crowd rules, confidentiality, role permissions |
+
+If the AI is down, keyword rules still route, flag safety and protect confidential cases.
+
+## Rules implemented
+1. Route from text: department, place, priority, reason.
+2. Group by meaning: same place + same problem type = one issue with a "me too" count; different problems at one place stay separate.
+3. Impact over tone: safety (fire, sparks, gas, medical, structural) is always critical; SHOUTING / "urgent" are ignored.
+4. Reports are data: instruction-like text is stripped, ignored and costs trust.
+5. Harassment/ragging: confidential, admin-only, reporter hidden, never sent to the AI provider when keywords catch it.
+6. Unknown or missing place: asks for clarification, nothing is routed.
+7. Resolved is not the end: only students who reported/joined before the fix can confirm or dispute; weighted disputes reopen.
+8. Trust score: starts at 50, every change is a ledger line with a reason ("Why this score?").
+9. Crowd priority: needs several distinct credible students; one voice can never lift an issue; the crowd can raise it by one tier but never to critical.
+Bonus: trending board, AI admin summary (falls back to a plain summary), brand-new-account brigading detection.
+
+## Honest limitations
+- The campus list (Lab 1-6, CSE/EE/IS Lab and Block, Library, Cafeteria) is our assumption; the statement gives none.
+- Department routing table is ours (wifi -> IS, electrical -> EE, everything else -> owner of the place); admin can reassign.
+- Data is a local JSON file, single process, no real login (as the judge access requires).
+- Keyword lists cover common English/Roman Urdu phrasing, not every phrasing; the AI covers typos and unusual wording.

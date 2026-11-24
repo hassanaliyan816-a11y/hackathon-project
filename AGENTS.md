@@ -15,9 +15,9 @@ docs/requirements.md, docs/architecture.md, docs/api-contract.md, docs/tasks.md
 - Prefer a running app over extra features.
 
 ## Commands (fill in after stack is chosen)
-- Install: TBD
-- Run: TBD
-- Test: TBD
+- Install: none (Node 22+, zero dependencies)
+- Run: npm start  (http://localhost:3000)
+- Test: npm test  (REPORTFIX_NO_LLM=1 npm test for rules only)
 
 ## Definition of done
 Feature can be demonstrated, build/tests run with real output reported, docs/tasks.md updated.

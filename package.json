@@ -1,0 +1,11 @@
+{
+  "name": "reportfix",
+  "version": "1.0.0",
+  "description": "ReportFix - campus problem reporting with AI triage (CodeQuest 2026)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node test/attack.js"
+  },
+  "engines": { "node": ">=22" }
+}

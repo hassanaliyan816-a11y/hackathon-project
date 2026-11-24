@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ReportFix</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.45 system-ui,Segoe UI,Arial,sans-serif;background:#f4f5f7;color:#1b1f24}
+  header{background:#14213d;color:#fff;padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  header h1{font-size:18px;margin:0 8px 0 0}
+  header select,header input,header button{font:inherit;padding:5px 8px;border-radius:5px;border:1px solid #556;}
+  header button{cursor:pointer;background:#fca311;border-color:#fca311;color:#000}
+  header button.danger{background:#e63946;border-color:#e63946;color:#fff}
+  .judge{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .who{margin-left:auto;font-size:13px;opacity:.9}
+  nav{display:flex;gap:4px;padding:8px 16px 0;flex-wrap:wrap;background:#e5e7eb}
+  nav button{border:0;padding:8px 14px;background:#cfd3da;border-radius:6px 6px 0 0;cursor:pointer;font:inherit}
+  nav button.on{background:#fff;font-weight:600}
+  main{padding:16px;max-width:1100px;margin:0 auto}
+  .card{background:#fff;border:1px solid #d9dce2;border-radius:8px;padding:12px;margin-bottom:10px}
+  textarea{width:100%;min-height:80px;font:inherit;padding:8px;border:1px solid #bbb;border-radius:6px}
+  button.pri{background:#14213d;color:#fff;border:0;padding:8px 14px;border-radius:6px;cursor:pointer;font:inherit}
+  button.sm{padding:4px 9px;border:1px solid #888;background:#fff;border-radius:5px;cursor:pointer;font:inherit;margin-right:4px}
+  button.ok{background:#2a9d8f;color:#fff;border-color:#2a9d8f}
+  button.bad{background:#e63946;color:#fff;border-color:#e63946}
+  .chip{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;margin-right:4px;background:#e5e7eb}
+  .critical{background:#e63946;color:#fff}.high{background:#f77f00;color:#fff}.medium{background:#fcbf49}.low{background:#cfe8d5}
+  .st-new{background:#bde0fe}.st-in_progress{background:#ffd6a5}.st-resolved{background:#caffbf}.st-closed{background:#9aa}.st-reopened{background:#ffadad}.st-invalid{background:#bbb}
+  .muted{color:#667}.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:280px}
+  .msg{padding:10px;border-radius:6px;margin-top:10px}
+  .msg.good{background:#e1f5ee}.msg.warn{background:#fff3cd}.msg.err{background:#fde2e4}
+  table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #e0e0e0;padding:5px 8px;text-align:left;vertical-align:top}
+  .hist{font-size:12px;color:#556;margin:6px 0 0 16px;padding:0}
+  .places button{margin:2px}
+  small{color:#667}
+</style>
+</head>
+<body>
+<header>
+  <h1>ReportFix</h1>
+  <div class="judge">
+    <label>Acting as <select id="userSel"></select></label>
+    <input id="newName" placeholder="New student name">
+    <button id="newBtn">+ Create student</button>
+    <button id="resetBtn" class="danger">Reset all data</button>
+  </div>
+  <div class="who" id="who"></div>
+</header>
+<nav id="tabs"></nav>
+<main id="view"></main>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let me = null, users = [], tab = null, places = [], lastReport = null;
+
+async function api(path, opts = {}) {
+  const r = await fetch('/api' + path, { method: opts.method || 'GET', headers: { 'Content-Type': 'application/json', 'x-user-id': localStorage.uid || '' }, body: opts.body ? JSON.stringify(opts.body) : undefined });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw Object.assign(new Error(j.error || r.statusText), { data: j, status: r.status });
+  return j;
+}
+
+async function loadUsers() {
+  users = await api('/users');
+  const sel = $('#userSel');
+  const groups = { student: 'Students', staff: 'Department staff', admin: 'Admin' };
+  sel.innerHTML = Object.entries(groups).map(([role, label]) =>
+    `<optgroup label="${label}">` + users.filter(u => u.role === role).map(u => `<option value="${u.id}">${esc(u.name)}${u.role === 'student' ? ' (trust ' + u.trust + ')' : ''}</option>`).join('') + '</optgroup>').join('');
+  if (!users.find(u => u.id === localStorage.uid)) localStorage.uid = users.find(u => u.role === 'student').id;
+  sel.value = localStorage.uid;
+}
+async function setUser() {
+  me = await api('/me');
+  $('#who').textContent = `${me.name} · ${me.role}${me.dept ? ' · ' + me.dept : ''}${me.trust != null ? ' · trust ' + me.trust : ''}`;
+  const tabs = me.role === 'student' ? ['Report', 'My issues', 'Public board', 'My trust'] : me.role === 'staff' ? ['Queue'] : ['All issues', 'Confidential', 'Users & trust', 'Trending', 'Summary'];
+  if (!tabs.includes(tab)) tab = tabs[0];
+  $('#tabs').innerHTML = tabs.map(t => `<button class="${t === tab ? 'on' : ''}" data-t="${t}">${t}</button>`).join('');
+  render();
+}
+$('#tabs').onclick = e => { if (e.target.dataset.t) { tab = e.target.dataset.t; lastReport = null; setUser(); } };
+$('#userSel').onchange = async e => { localStorage.uid = e.target.value; lastReport = null; await setUser(); };
+$('#newBtn').onclick = async () => {
+  try { const u = await api('/users', { method: 'POST', body: { name: $('#newName').value || 'New Student' } }); $('#newName').value = ''; localStorage.uid = u.id; await loadUsers(); await setUser(); }
+  catch (e) { alert(e.message); }
+};
+$('#resetBtn').onclick = async () => { if (!confirm('Reset ALL data to the starting state?')) return; await api('/reset', { method: 'POST' }); localStorage.uid = ''; await loadUsers(); await setUser(); };
+
+const chip = (cls, t) => `<span class="chip ${cls}">${esc(t)}</span>`;
+function issueCard(i, mode) {
+  if (i.confidential) {
+    return `<div class="card"><b>#${i.id} ${esc(i.title)}</b> ${chip('st-' + i.status, i.status)} ${chip('critical', 'confidential')}
+      <div class="muted">${esc(i.reason || '')}</div>
+      ${(i.texts || []).map(t => `<div style="margin-top:6px"><small>${esc(t.reporter)}</small><br>${esc(t.text)}</div>`).join('')}
+      ${mode === 'admin' && i.status !== 'closed' ? `<div style="margin-top:8px"><button class="sm ok" onclick="act(${i.id},'resolved')">Close case</button></div>` : ''}
+      ${i.history ? `<ul class="hist">${i.history.map(h => `<li>${esc(h.text)}</li>`).join('')}</ul>` : ''}</div>`;
+  }
+  const staffLike = me.role === 'staff' || me.role === 'admin';
+  let acts = '';
+  if (me.role === 'student') {
+    if (i.canJoin) acts += `<button class="sm" onclick="join(${i.id})">Me too (${i.supporters})</button>`;
+    if (i.canVote) acts += `<span class="muted">Is it really fixed? </span><button class="sm ok" onclick="vote(${i.id},'confirm')">Confirm fixed</button><button class="sm bad" onclick="vote(${i.id},'dispute')">Still broken</button>`;
+    if (i.myVote) acts += chip('', 'You voted: ' + i.myVote);
+  } else {
+    if (['new', 'reopened'].includes(i.status)) acts += `<button class="sm" onclick="act(${i.id},'in_progress')">Start work</button>`;
+    if (['new', 'in_progress', 'reopened'].includes(i.status)) acts += `<button class="sm ok" onclick="resolve(${i.id})">Mark resolved</button>`;
+    if (!['closed', 'invalid'].includes(i.status)) acts += `<button class="sm bad" onclick="act(${i.id},'invalid')">Mark fake/spam</button>`;
+    if (me.role === 'admin') acts += `<select onchange="reassign(${i.id},this.value)"><option value="">Reassign…</option>${['EE', 'CSE', 'IS', 'Library', 'Cafeteria', 'Labs'].map(d => `<option>${d}</option>`).join('')}</select>`;
+  }
+  return `<div class="card">
+    <div><b>#${i.id} ${esc(i.title)}</b> ${chip(i.tier, i.tier + (i.tier !== i.baseTier ? ' (raised by crowd)' : ''))} ${chip('st-' + i.status, i.status)} ${chip('', i.dept)}
+      ${i.safety ? chip('critical', 'safety') : ''}${i.brigading ? chip('critical', 'brigading flag') : ''}${i.reopenCount ? chip('st-reopened', 'reopened ×' + i.reopenCount) : ''}${i.mine ? chip('', 'you reported/joined') : ''}</div>
+    <div class="muted">${esc(i.reason || '')}</div>
+    <div><small>${i.supporters} student(s) affected · weighted support ${i.weightedSupport} · ${i.credibleSupporters} credible · score ${i.score}</small></div>
+    ${i.resolvedNote ? `<div><small>Staff note: ${esc(i.resolvedNote)}</small></div>` : ''}
+    ${i.voteProgress ? `<div><small>Verification: ${i.voteProgress.confirms} confirm / ${i.voteProgress.disputes} dispute of ${i.voteProgress.affected} affected</small></div>` : ''}
+    ${staffLike && i.texts ? i.texts.slice(0, 4).map(t => `<div style="margin-top:4px"><small>${t.reporter ? esc(t.reporter) + ': ' : ''}${t.injection ? '[contained instructions - ignored] ' : ''}</small>“${esc(t.text)}”</div>`).join('') : ''}
+    ${me.role === 'admin' && i.supporterList ? `<small>Supporters: ${i.supporterList.map(s => esc(s.name) + ' (' + s.trust + ')').join(', ')}</small>` : ''}
+    ${acts ? `<div style="margin-top:8px">${acts}</div>` : ''}
+    ${i.history ? `<ul class="hist">${i.history.slice(-5).map(h => `<li>${esc(h.text)}</li>`).join('')}</ul>` : ''}
+  </div>`;
+}
+
+async function render() {
+  const v = $('#view');
+  try {
+    if (tab === 'Report') {
+      if (!places.length) places = (await api('/meta')).places;
+      v.innerHTML = `<div class="card"><h3 style="margin-top:0">Report a campus problem</h3>
+        <p class="muted">English, Roman Urdu or a mix is fine. Say what is wrong and where.</p>
+        <textarea id="txt" placeholder="e.g. Lab 3 mein WiFi nahi chal raha"></textarea>
+        <div style="margin-top:8px"><button class="pri" id="sendBtn">Submit report</button></div>
+        <div id="out">${lastReport || ''}</div></div>
+        <small class="muted">Places on this demo campus: ${places.map(p => esc(p.name)).join(', ')}</small>`;
+      $('#sendBtn').onclick = submit;
+    } else if (tab === 'My issues') {
+      const a = await api('/issues?scope=mine'); v.innerHTML = a.length ? a.map(i => issueCard(i)).join('') : '<p class="muted">You have not reported or joined anything yet.</p>';
+    } else if (tab === 'Public board') {
+      const a = await api('/issues?scope=public'); v.innerHTML = a.length ? a.map(i => issueCard(i)).join('') : '<p class="muted">No issues yet.</p>';
+    } else if (tab === 'My trust') { await showTrust(me.id, v); }
+    else if (tab === 'Queue') {
+      const a = await api('/issues?scope=dept'); v.innerHTML = `<h3>${esc(me.dept)} queue (most important first)</h3>` + (a.length ? a.map(i => issueCard(i)).join('') : '<p class="muted">Nothing in your queue.</p>');
+    } else if (tab === 'All issues') {
+      const a = await api('/issues?scope=dept'); v.innerHTML = a.length ? a.map(i => issueCard(i)).join('') : '<p class="muted">No issues yet.</p>';
+    } else if (tab === 'Confidential') {
+      const a = await api('/issues?scope=confidential'); v.innerHTML = `<p class="muted">Admin-only. Reporter identities are never shown.</p>` + (a.length ? a.map(i => issueCard(i, 'admin')).join('') : '<p class="muted">No confidential cases.</p>');
+    } else if (tab === 'Users & trust') {
+      const us = await api('/users'); v.innerHTML = `<div class="card"><table><tr><th>Student</th><th>Trust</th><th></th></tr>${us.filter(u => u.role === 'student').map(u => `<tr><td>${esc(u.name)}</td><td>${u.trust}</td><td><button class="sm" onclick="trustFor('${u.id}')">Why this score?</button></td></tr>`).join('')}</table></div><div id="trustBox"></div>`;
+    } else if (tab === 'Trending') {
+      const a = await api('/trending'); v.innerHTML = `<p class="muted">Most new "me too" joins in the last hour.</p>` + (a.length ? a.map(i => issueCard(i)).join('') : '<p class="muted">Nothing trending.</p>');
+    } else if (tab === 'Summary') {
+      v.innerHTML = `<div class="card"><button class="pri" id="sumBtn">Generate admin summary</button><pre id="sumOut" style="white-space:pre-wrap"></pre></div>`;
+      $('#sumBtn').onclick = async () => { $('#sumOut').textContent = 'Working…'; const s = await api('/admin/summary', { method: 'POST' }); $('#sumOut').textContent = s.text + `\n\n(source: ${s.source === 'ai' ? 'AI' : 'plain rules'})`; };
+    }
+  } catch (e) { v.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+}
+async function showTrust(uid, box) {
+  const t = await api(`/users/${uid}/trust`);
+  box.innerHTML = `<div class="card"><h3 style="margin-top:0">${esc(t.user.name)} · trust ${t.user.trust} · vote weight ${t.user.weight}</h3><p class="muted">${esc(t.explanation)}</p>
+    <table><tr><th>When</th><th>Change</th><th>Why</th></tr>${t.entries.length ? t.entries.map(e => `<tr><td>${new Date(e.ts).toLocaleTimeString()}</td><td><b style="color:${e.delta >= 0 ? '#2a9d8f' : '#e63946'}">${e.delta > 0 ? '+' : ''}${e.delta}</b></td><td>${esc(e.reason)}</td></tr>`).join('') : '<tr><td colspan="3" class="muted">No changes yet. Started at 50.</td></tr>'}</table></div>`;
+}
+window.trustFor = id => showTrust(id, $('#trustBox'));
+
+async function submit() {
+  const text = $('#txt').value.trim(); if (!text) return;
+  $('#sendBtn').disabled = true; $('#out').innerHTML = '<div class="msg">Understanding your report…</div>';
+  try {
+    const r = await api('/reports', { method: 'POST', body: { text } });
+    let html = '';
+    if (r.outcome === 'clarify') {
+      html = `<div class="msg warn"><b>Need one more detail.</b> ${esc(r.message)}<div class="places" style="margin-top:6px">${(r.places || []).map(p => `<button class="sm" onclick="addPlace('${esc(p)}')">${esc(p)}</button>`).join('')}</div></div>`;
+    } else if (r.outcome === 'duplicate' || r.outcome === 'already_joined') {
+      html = `<div class="msg warn">${esc(r.message)}</div>`;
+    } else if (r.issue && r.issue.confidential) {
+      html = `<div class="msg good"><b>Received confidentially.</b> ${esc(r.issue.reason)} Case #${r.issue.id}.</div>`;
+    } else if (r.outcome === 'dispute_via_report') {
+      html = `<div class="msg good">${esc(r.message)}</div>`;
+    } else {
+      const t = r.triage;
+      html = `<div class="msg good"><b>${r.outcome === 'joined' ? 'Matched an existing issue - you are counted as "me too"' : 'New issue created'} (#${r.issue.id})</b><br>
+        Place: <b>${esc(t.place)}</b> · Problem: <b>${esc(t.type)}</b> · Department: <b>${esc(t.dept)}</b> · Priority: ${chip(r.issue.tier, r.issue.tier)}<br>
+        <span class="muted">Why: ${esc(t.reason)}</span>${t.injectionIgnored ? '<br><b>Note:</b> your text contained instructions to the system. They were ignored and your trust score was reduced.' : ''}<br>
+        <small>${r.issue.supporters} student(s) affected · understood by ${t.usedAI ? 'AI + rules' : 'rules only (AI unavailable)'}</small></div>`;
+    }
+    lastReport = html; $('#out').innerHTML = html;
+    if (r.outcome !== 'clarify') { $('#txt').value = ''; }
+    const u = await api('/me'); $('#who').textContent = `${u.name} · ${u.role} · trust ${u.trust}`;
+  } catch (e) { $('#out').innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+  $('#sendBtn').disabled = false;
+}
+window.addPlace = p => { const t = $('#txt'); t.value = t.value.trim() + ' (' + p + ')'; };
+window.join = async id => { try { await api(`/issues/${id}/join`, { method: 'POST' }); await setUser(); } catch (e) { alert(e.message); } };
+window.vote = async (id, v) => { try { await api(`/issues/${id}/vote`, { method: 'POST', body: { vote: v } }); await setUser(); } catch (e) { alert(e.message); } };
+window.act = async (id, status, note) => { try { await api(`/issues/${id}/status`, { method: 'POST', body: { status, note } }); await render(); } catch (e) { alert(e.message); } };
+window.resolve = id => { const note = prompt('What was done? (shown to students)') ; if (note === null) return; act(id, 'resolved', note); };
+window.reassign = async (id, dept) => { if (!dept) return; try { await api(`/issues/${id}/reassign`, { method: 'POST', body: { dept } }); await render(); } catch (e) { alert(e.message); } };
+
+(async () => { await loadUsers(); await setUser(); })();
+</script>
+</body>
+</html>
