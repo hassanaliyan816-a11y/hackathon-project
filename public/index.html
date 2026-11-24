@@ -26,8 +26,18 @@ button:active:not(:disabled){transform:scale(.97)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
 /* ============ NAV BAR ============ */
-.top{position:sticky;top:0;z-index:60;background:linear-gradient(120deg,#050f1f 0%,#0b2a5b 62%,#14407f 100%);color:#fff;border-bottom:3px solid var(--gold);box-shadow:0 10px 30px -12px rgba(5,15,31,.75)}
-.top::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(135deg,rgba(255,255,255,.028) 0 2px,transparent 2px 14px)}
+/* Tall banner: the campus photo + a navy gradient. The title area scrolls away; the nav bar stays pinned (sticky top = -title height). */
+.top{--ht:136px;position:sticky;top:calc(var(--ht) * -1);z-index:60;background:#07162b;color:#fff;border-bottom:3px solid var(--gold);box-shadow:0 12px 32px -12px rgba(5,15,31,.8)}
+.top::before{content:"";position:absolute;inset:0;background:url(/campus.jpg) center 40%/cover no-repeat;z-index:0}
+.top::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background:
+  repeating-linear-gradient(135deg,rgba(255,255,255,.03) 0 2px,transparent 2px 14px),
+  linear-gradient(to top,rgba(5,15,31,.78) 0%,rgba(5,15,31,.05) 42%,rgba(5,15,31,0) 100%),
+  linear-gradient(100deg,rgba(5,15,31,.86) 0%,rgba(11,42,91,.6) 36%,rgba(20,64,127,.2) 70%,rgba(11,42,91,.34) 100%)}
+.herotitle{position:relative;z-index:1;height:var(--ht);max-width:1200px;margin:0 auto;padding:0 20px;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.herotitle .eyebrow{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold2);font-weight:800;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+.herotitle .big{margin:0;font-size:clamp(26px,4vw,40px);letter-spacing:-.025em;line-height:1.1;font-weight:800;text-shadow:0 2px 18px rgba(0,0,0,.6)}
+.herotitle .big em{font-style:normal;color:var(--gold2)}
+.herotitle .sub{margin:2px 0 0;color:#cfe0ff;font-size:15px;text-shadow:0 1px 8px rgba(0,0,0,.6)}
 .bar{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 20px;height:var(--navh);display:flex;align-items:center;gap:18px}
 .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:#fff;margin-right:6px}
 .logo{width:50px;height:50px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 0 0 2px var(--gold),0 8px 20px -6px rgba(0,0,0,.6);overflow:hidden;flex:none;transition:transform .3s var(--ease)}
@@ -245,7 +255,7 @@ footer b{color:var(--ink2)}
   .welcome .hint{margin-left:0;max-width:none}
   .welcome h2{font-size:24px}
 }
-@media (max-width:560px){.brand .org{display:none}.mbtn .cur{display:none}.wrap,main,nav.tabsnav{padding-left:14px;padding-right:14px}.acts input.in{width:100%}}
+@media (max-width:560px){.top{--ht:96px}.herotitle .sub{display:none}.herotitle .eyebrow{font-size:10.5px}.brand .org{display:none}.mbtn .cur{display:none}.wrap,main,nav.tabsnav{padding-left:14px;padding-right:14px}.acts input.in{width:100%}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
@@ -254,6 +264,11 @@ footer b{color:var(--ink2)}
 <div id="cur" aria-hidden="true"></div><div id="cdot" aria-hidden="true"></div>
 
 <header class="top">
+  <div class="herotitle">
+    <div class="eyebrow">Campus issue resolution portal</div>
+    <div class="big">Report it. Route it. <em>Fix it.</em> Verify it.</div>
+    <p class="sub">Military College of Signals · problems read by AI, decided by rules, confirmed by students</p>
+  </div>
   <div class="bar">
     <a class="brand" href="#" aria-label="ReportFix home">
       <div class="logo" id="logo"><img src="/mcs-logo.png" alt="Military College of Signals" onerror="this.parentNode.innerHTML=MONO"></div>
