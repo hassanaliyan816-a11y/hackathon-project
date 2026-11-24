@@ -1,16 +1,16 @@
 # Test report
-Automated: `node test/attack.js` = 38 PASS / 0 FAIL with AI on; `REPORTFIX_NO_LLM=1 node test/attack.js` = 38 PASS / 0 FAIL (rules only).
-Includes: grouping across Roman Urdu/English, different problems at one place kept separate (window vs smell), calm fire/sparks critical, SHOUTING ignored,
-injection ignored + trust penalty, confidential ragging hidden from public/all departments/reporter, Lab 9 / no place -> clarification,
-only affected students vote, disputes reopen, trust ledger reasons, one high-trust voice cannot lift a minor issue, brigading capped + flagged, permissions, reset.
+Run everything: `npm test` (rules-only, no API key needed). **122 checks, all PASS.**
 
-Manual click-through in the browser UI (rules-only mode, AI credit was exhausted): Ali report -> Sara report grouped ("me too", 2 students) ->
-IS staff resolved with a note -> Ali "Still broken" (1 of 2) -> Sara "Still broken" -> issue reopened, Sara trust 85 -> 88 with ledger reason -> two-click Reset worked.
+| Suite | Checks | What it covers |
+|---|---|---|
+| `test/attack.js` | 38 | routing, Roman Urdu/English grouping, different problems at one place, calm fire/sparks critical, SHOUTING ignored, prompt injection, confidential ragging reports, unknown places, only-affected voting, crowd cannot be gamed, brigading, permissions, reset |
+| `test/community.js` | 11 | confirm closes + trust ledger, late joiners cannot vote, a lone low-trust voice cannot reopen, credible dispute reopens, auto-close after the verification window, fake report costs trust |
+| `test/export.js` | 5 | admin Word export works, student/staff get 403, confidential export, export all |
+| `test/security.js` | 68 | security headers, path traversal, server crash resistance, CSRF, body limits, prototype pollution, authorization matrix, confidentiality across every endpoint and role, input validation, abuse limits, regex DoS, export hardening, information exposure |
 
-NOT TESTED: other browsers, many simultaneous users, admin tabs by hand (Confidential, Users & trust, Trending, Summary are API-tested only),
-AI behaviour on sentences we have not seen (OpenRouter credit ran out during testing; the app falls back to keyword rules).
+Also done by hand / in a browser:
+- XSS probe: five script payloads viewed as admin, staff and student on every page: none executed (see docs/SECURITY.md).
+- UI click-through: sign in via the nav menus, report, group, resolve, dispute/reopen, reset, Word download.
+- AI run: `TEST_WITH_AI=1 node test/attack.js` and `EXPORT_WITH_AI=1 node test/export.js` with Gemini: all pass, report text AI-written.
 
-Update: community layer hardened and tested (`node test/community.js`, 11 checks PASS):
-- A reopen now needs at least one credible disputer (trust >= 30); a lone very-low-trust voice cannot reopen a fix.
-- A resolved issue closes automatically if nobody credibly disputes within the verification window (default 30 min, set REPORTFIX_VERIFY_MIN to change).
-Run everything with `npm test` (or `node test/attack.js` and `node test/community.js`).
+Not tested: other browsers, many simultaneous real users, a real phone's vibration, opening the .docx in Microsoft Word itself (validated with a Word-file reader).

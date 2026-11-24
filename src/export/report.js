@@ -1,7 +1,7 @@
 // Admin Word-document export. The AI writes the narrative; every number comes from the system, never from the AI.
 const D = require('./docx');
-const LLM = require('./llm');
-const L = require('./logic');
+const LLM = require('../ai/llm');
+const L = require('../domain');
 
 const NAVY = '0B2A5B', GOLD = 'B8860B', LABEL_FILL = 'E8EEF8';
 const TIER = { critical: 'CRITICAL', high: 'HIGH', medium: 'MEDIUM', low: 'LOW' };

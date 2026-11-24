@@ -1,5 +1,5 @@
 // Deterministic text rules (English + Roman Urdu). Used as a safety floor and as the fallback when AI is unavailable.
-const { PLACES } = require('./campus');
+const { PLACES } = require('../domain/campus');
 
 function norm(s) {
   return String(s || '')
@@ -99,7 +99,6 @@ function fallbackSubject(text, detail) {
 
 /* ---------------- location ---------------- */
 const NUMWORD = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, ek: 1, teen: 3, char: 4, chaar: 4, panch: 5, paanch: 5, chay: 6 };
-const placeByName = name => PLACES.find(p => p.name.toLowerCase() === String(name || '').toLowerCase().trim()) || null;
 const placeById = id => PLACES.find(p => p.id === id) || null;
 
 const UNKNOWN_WORDS = /\b(hostel|hostels|gym|gymnasium|swimming\s*pool|pool|parking|mosque|masjid|auditorium|main\s*gate|gate|ground|playground|rooftop|roof\s*top|helipad|basement|bank|cinema|hogwarts|mall|stadium|garden|park|bus\s*stop|clinic|dispensary|registrar|admin\s*block|admin\s*office|mechanical|civil|chemistry|physics|bio\w*)\b/;
@@ -154,4 +153,4 @@ function locate(text) {
   return { status: 'none' };
 }
 
-module.exports = { norm, normSubject, fallbackSubject, detectTypeDetail, detectInjection, detectSafety, detectHarassment, detectType, locate, placeByName, placeById };
+module.exports = { norm, normSubject, fallbackSubject, detectTypeDetail, detectInjection, detectSafety, detectHarassment, detectType, locate };

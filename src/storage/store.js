@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const FILE = process.env.REPORTFIX_DATA || path.join(__dirname, '..', 'data', 'db.json');
+const FILE = process.env.REPORTFIX_DATA || path.join(__dirname, '..', '..', 'data', 'db.json');
 let db = null;
 
 const DAY = 86400000;

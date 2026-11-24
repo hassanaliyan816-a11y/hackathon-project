@@ -16,7 +16,7 @@ docs/requirements.md, docs/architecture.md, docs/api-contract.md, docs/tasks.md
 
 ## Commands (fill in after stack is chosen)
 - Install: none (Node 22+, zero dependencies)
-- Run: npm start  (http://localhost:3000)
+- Run: node src/server.js  (http://localhost:3000)
 - Test: npm test  (REPORTFIX_NO_LLM=1 npm test for rules only)
 
 ## Definition of done

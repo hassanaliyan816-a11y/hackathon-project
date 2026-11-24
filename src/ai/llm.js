@@ -1,5 +1,6 @@
-// AI layer: OpenRouter. The AI only EXTRACTS facts from text. It never decides priority, trust or permissions.
-const { PLACES, TYPES } = require('./campus');
+// AI layer: Gemini / Groq / OpenRouter (any chat-completions provider). The AI only EXTRACTS facts from text and drafts wording.
+// It never decides priority, trust, votes or permissions. Failures fall back to the next model, then to keyword rules.
+const { PLACES, TYPES } = require('../domain/campus');
 
 const state = { lastError: null, calls: 0, ok: 0 };
 
@@ -77,8 +78,18 @@ async function callModel(entry, messages, json, maxTokens) {
   finally { clearTimeout(to); }
 }
 
+// Budget: at most N AI requests per minute in total, so a flood of reports cannot burn through the free quota
+// (anything over the budget is handled by the keyword rules instead).
+const recentCalls = [];
+function withinBudget() {
+  const now = Date.now();
+  while (recentCalls.length && now - recentCalls[0] > 60000) recentCalls.shift();
+  if (recentCalls.length >= require('../config').llmCallsPerMin()) { state.lastError = 'per-minute AI budget reached (keyword rules used)'; return false; }
+  recentCalls.push(now); return true;
+}
+
 async function chat(messages, { json = true, maxTokens = 350 } = {}) {
-  if (!enabled()) return null;
+  if (!enabled() || !withinBudget()) return null;
   state.calls++;
   let models = modelList();
   const good = models.find(m => m.id === lastGood);

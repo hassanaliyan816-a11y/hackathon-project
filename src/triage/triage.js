@@ -1,7 +1,7 @@
 // Triage = AI extracts facts + rules enforce safety/location/injection; code computes priority and department.
 const R = require('./rules');
-const LLM = require('./llm');
-const { PLACES, TYPES, routeDept, SUBJECT_TYPES } = require('./campus');
+const LLM = require('../ai/llm');
+const { PLACES, TYPES, routeDept, SUBJECT_TYPES } = require('../domain/campus');
 
 const clean = s => String(s || '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, ' ').trim().slice(0, 1000);
 

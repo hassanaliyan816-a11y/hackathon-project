@@ -5,7 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "test": "node test/attack.js && node test/community.js && node test/export.js"
+    "test": "node test/attack.js && node test/community.js && node test/export.js && node test/security.js"
   },
   "engines": { "node": ">=22" }
 }
