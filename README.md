@@ -43,3 +43,6 @@ Bonus: trending board, AI admin summary (falls back to a plain summary), brand-n
 ## Branding (Military College of Signals)
 The header shows `public/mcs-logo.png` (the MCS logo supplied by the team). If the file is missing, a generic "MCS" monogram is shown.
 To use the official logo: copy the college's logo file to `public/mcs-logo.png` (PNG, square or transparent works best) and refresh.
+
+## Verification window
+After staff mark an issue resolved, affected students have 30 minutes (change with the environment variable `REPORTFIX_VERIFY_MIN`, e.g. `2` for a short demo) to dispute it. A reopen needs at least one credible disputer (trust >= 30). If nobody credibly disputes, the issue closes automatically.

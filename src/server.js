@@ -35,6 +35,7 @@ async function handle(req, res) {
   }
   const m = req.method;
   try {
+    L.tick(); // closes resolved issues nobody credibly disputed within the verification window
     // --- judge access: no auth needed ---
     if (p === '/api/health') return send(res, 200, { ok: true, llm: LLM.enabled(), llmCalls: LLM.state.calls, llmOk: LLM.state.ok, llmLastError: LLM.state.lastError });
     if (p === '/api/meta') return send(res, 200, { places: PLACES.map(x => ({ name: x.name, dept: x.dept })), depts: DEPTS });

@@ -67,24 +67,39 @@ function affected(issue) {
 }
 function evalVotes(issue) {
   const aff = affected(issue);
-  let T = 0, C = 0, D = 0, disputers = 0, confirmers = 0;
+  let T = 0, C = 0, D = 0, disputers = 0, confirmers = 0, credibleDisputers = 0;
   for (const s of aff) {
     const u = userById(s.userId); if (!u) continue;
     const w = trustWeight(u.trust) * ageFactor(u, s.joinedAt);
     T += w;
     const v = issue.votes[s.userId];
     if (v === 'confirm') { C += w; confirmers++; }
-    if (v === 'dispute') { D += w; disputers++; }
+    if (v === 'dispute') { D += w; disputers++; if (u.trust >= CREDIBLE_TRUST) credibleDisputers++; }
   }
   const thr = Math.min(1.5, 0.5 * T);
-  return { T, C, D, thr, disputers, confirmers, affected: aff.length };
+  return { T, C, D, thr, disputers, confirmers, credibleDisputers, affected: aff.length };
+}
+// A fix can only be reopened if at least one disputer is credible (trust >= 30); a lone very-low-trust voice cannot do it.
+const CREDIBLE_TRUST = 30;
+// If nobody credibly disputes a resolved fix within this window, it is closed (silence = the fix stands). Minutes, adjustable.
+const verifyMs = () => (parseFloat(process.env.REPORTFIX_VERIFY_MIN) || 30) * MIN;
+function tick() {
+  const now = Date.now(); let changed = false;
+  for (const i of db().issues) {
+    if (i.status !== 'resolved' || !i.resolvedAt || now - i.resolvedAt < verifyMs()) continue;
+    i.status = 'closed';
+    logEvent(i, `Closed automatically: no credible dispute within ${Math.round(verifyMs() / MIN * 10) / 10} minute(s) of the fix being reported.`);
+    for (const [uid, v] of Object.entries(i.votes)) if (v === 'confirm') addTrust(uid, +2, `Confirmed the fix on issue #${i.id} and nobody credibly disputed it`, i.id);
+    changed = true;
+  }
+  if (changed) Store.save();
 }
 function logEvent(issue, text) { issue.history.push({ ts: Date.now(), text }); }
 
 function settleVotes(issue) {
   if (issue.status !== 'resolved') return;
   const ev = evalVotes(issue);
-  if (ev.D >= ev.thr && ev.D > ev.C && ev.disputers >= 1) {
+  if (ev.D >= ev.thr && ev.D > ev.C && ev.credibleDisputers >= 1) {
     issue.status = 'reopened'; issue.reopenCount++;
     logEvent(issue, `Reopened: affected students disputed the fix (dispute weight ${ev.D.toFixed(2)} vs confirm ${ev.C.toFixed(2)}).`);
     for (const [uid, v] of Object.entries(issue.votes)) {
@@ -284,7 +299,7 @@ function viewIssue(issue, viewer) {
     v.canJoin = !mineSup && OPEN.includes(issue.status);
     v.canVote = issue.status === 'resolved' && affected(issue).some(s => s.userId === viewer.id);
     v.myVote = issue.votes[viewer.id] || null;
-    if (issue.status === 'resolved') { const ev = evalVotes(issue); v.voteProgress = { affected: ev.affected, confirms: ev.confirmers, disputes: ev.disputers }; }
+    if (issue.status === 'resolved') { const ev = evalVotes(issue); v.voteProgress = { affected: ev.affected, confirms: ev.confirmers, disputes: ev.disputers, autoCloseMin: Math.max(0, Math.ceil((issue.resolvedAt + verifyMs() - Date.now()) / MIN)) }; }
     v.history = mineSup ? issue.history.slice(-8) : undefined;
   } else {
     v.history = issue.history;
@@ -292,7 +307,7 @@ function viewIssue(issue, viewer) {
     if (viewer.role === 'admin') {
       v.supporterList = issue.supporters.map(s => { const u = userById(s.userId) || {}; return { name: u.name, trust: u.trust, via: s.via }; });
     }
-    if (issue.status === 'resolved') { const ev = evalVotes(issue); v.voteProgress = { affected: ev.affected, confirms: ev.confirmers, disputes: ev.disputers }; }
+    if (issue.status === 'resolved') { const ev = evalVotes(issue); v.voteProgress = { affected: ev.affected, confirms: ev.confirmers, disputes: ev.disputers, autoCloseMin: Math.max(0, Math.ceil((issue.resolvedAt + verifyMs() - Date.now()) / MIN)) }; }
   }
   return v;
 }
@@ -352,4 +367,4 @@ function createStudent(name) {
   return u;
 }
 
-module.exports = { HttpError, userById, submitReport, join, vote, setStatus, reassign, listIssues, viewIssue, trustView, trending, adminSummary, createStudent, importance, issueById };
+module.exports = { tick, HttpError, userById, submitReport, join, vote, setStatus, reassign, listIssues, viewIssue, trustView, trending, adminSummary, createStudent, importance, issueById };

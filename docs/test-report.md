@@ -9,3 +9,8 @@ IS staff resolved with a note -> Ali "Still broken" (1 of 2) -> Sara "Still brok
 
 NOT TESTED: other browsers, many simultaneous users, admin tabs by hand (Confidential, Users & trust, Trending, Summary are API-tested only),
 AI behaviour on sentences we have not seen (OpenRouter credit ran out during testing; the app falls back to keyword rules).
+
+Update: community layer hardened and tested (`node test/community.js`, 11 checks PASS):
+- A reopen now needs at least one credible disputer (trust >= 30); a lone very-low-trust voice cannot reopen a fix.
+- A resolved issue closes automatically if nobody credibly disputes within the verification window (default 30 min, set REPORTFIX_VERIFY_MIN to change).
+Run everything with `npm test` (or `node test/attack.js` and `node test/community.js`).

@@ -436,7 +436,7 @@ function issueCard(i, mode) {
   const vp = i.voteProgress;
   const vote = vp ? `<div class="vote"><b>Did the fix work?</b> <span class="tiny">${vp.affected} affected student(s) decide</span>
       <div class="vbar"><div class="c" style="width:${vp.affected ? vp.confirms / vp.affected * 100 : 0}%"></div><div class="d" style="width:${vp.affected ? vp.disputes / vp.affected * 100 : 0}%"></div></div>
-      <span class="tiny">${vp.confirms} confirm · ${vp.disputes} dispute · ${Math.max(0, vp.affected - vp.confirms - vp.disputes)} waiting</span>${i.resolvedNote ? `<div class="tiny" style="margin-top:4px">Staff note: ${esc(i.resolvedNote)}</div>` : ''}</div>` : '';
+      <span class="tiny">${vp.confirms} confirm · ${vp.disputes} dispute · ${Math.max(0, vp.affected - vp.confirms - vp.disputes)} waiting${vp.autoCloseMin != null ? ` · closes automatically in ~${vp.autoCloseMin} min if nobody credibly disputes` : ''}</span>${i.resolvedNote ? `<div class="tiny" style="margin-top:4px">Staff note: ${esc(i.resolvedNote)}</div>` : ''}</div>` : '';
   const raised = i.tier !== i.baseTier;
   return `<div class="card spot issue t-${i.tier}">
     <div class="ihead"><span class="id">#${i.id}</span><span class="ttl">${esc(i.title)}</span></div>
