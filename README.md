@@ -41,5 +41,5 @@ Bonus: trending board, AI admin summary (falls back to a plain summary), brand-n
 - Keyword lists cover common English/Roman Urdu phrasing, not every phrasing; the AI covers typos and unusual wording.
 
 ## Branding (Military College of Signals)
-The header shows `public/mcs-logo.png` if the file exists. Until then a generic "MCS" monogram is shown (it is NOT the official crest).
+The header shows `public/mcs-logo.png` (the MCS logo supplied by the team). If the file is missing, a generic "MCS" monogram is shown.
 To use the official logo: copy the college's logo file to `public/mcs-logo.png` (PNG, square or transparent works best) and refresh.
