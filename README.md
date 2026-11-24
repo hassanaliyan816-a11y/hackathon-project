@@ -39,3 +39,7 @@ Bonus: trending board, AI admin summary (falls back to a plain summary), brand-n
 - Department routing table is ours (wifi -> IS, electrical -> EE, everything else -> owner of the place); admin can reassign.
 - Data is a local JSON file, single process, no real login (as the judge access requires).
 - Keyword lists cover common English/Roman Urdu phrasing, not every phrasing; the AI covers typos and unusual wording.
+
+## Branding (Military College of Signals)
+The header shows `public/mcs-logo.png` if the file exists. Until then a generic "MCS" monogram is shown (it is NOT the official crest).
+To use the official logo: copy the college's logo file to `public/mcs-logo.png` (PNG, square or transparent works best) and refresh.

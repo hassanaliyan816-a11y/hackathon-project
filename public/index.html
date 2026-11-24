@@ -8,7 +8,7 @@
 <style>
 :root{
   --ink:#0f172a; --ink2:#475569; --ink3:#94a3b8; --line:#e2e8f0; --bg:#f4f6fb; --card:#ffffff;
-  --brand:#4f46e5; --brand2:#7c3aed; --accent:#06b6d4;
+  --brand:#1e4fa8; --brand2:#0b2a5b; --accent:#c9a227; --navy:#07162b; --gold:#d4af37;
   --critical:#e11d48; --high:#f97316; --medium:#f59e0b; --low:#10b981;
   --good:#059669; --bad:#e11d48; --r:16px;
   --shadow:0 1px 2px rgba(15,23,42,.05),0 8px 24px -8px rgba(15,23,42,.12);
@@ -21,10 +21,33 @@ body{margin:0;font:15px/1.55 Inter,"Segoe UI",system-ui,-apple-system,Roboto,Ari
 button,input,select,textarea{font:inherit;color:inherit}
 
 /* ---------- header ---------- */
-header{position:relative;z-index:20;background:linear-gradient(120deg,#1e1b4b 0%,#312e81 55%,#4c1d95 100%);color:#fff;box-shadow:0 8px 30px -10px rgba(30,27,75,.6)}
+header{position:relative;z-index:20;background:linear-gradient(120deg,#050f1f 0%,#0b2a5b 60%,#14407f 100%);color:#fff;border-bottom:3px solid var(--gold);box-shadow:0 10px 30px -12px rgba(5,15,31,.7)}
+header::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(135deg,rgba(255,255,255,.025) 0 2px,transparent 2px 14px)}
+.hwrap,.whoRow,.quick{position:relative;z-index:1}
 .hwrap{max-width:1180px;margin:0 auto;padding:12px 20px;display:flex;flex-wrap:wrap;gap:14px;align-items:center}
 .brand{display:flex;align-items:center;gap:12px;margin-right:auto}
-.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#a855f7);display:grid;place-items:center;box-shadow:0 6px 18px -4px rgba(168,85,247,.7)}
+.logo{width:56px;height:56px;border-radius:14px;background:#fff;display:grid;place-items:center;box-shadow:0 0 0 2px var(--gold),0 8px 20px -6px rgba(0,0,0,.6);overflow:hidden;flex:none}
+.logo img{width:100%;height:100%;object-fit:contain;padding:3px}
+.brand .org{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.quick{max-width:1180px;margin:0 auto;padding:0 20px 12px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.qgroup{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.qlabel{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#93b4e6;font-weight:700;margin-right:2px}
+.qchip{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:999px;padding:3px 12px 3px 4px;cursor:pointer;font-weight:600;font-size:13px;transition:.15s}
+.qchip:hover{background:rgba(255,255,255,.2)}
+.qchip.on{background:var(--gold);border-color:var(--gold);color:#1a1405}
+.qchip .avatar{width:24px;height:24px;font-size:10px}
+.qchip small{opacity:.75;font-weight:600}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.dcard{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;box-shadow:var(--shadow);transition:.15s;position:relative;overflow:hidden;text-align:left}
+.dcard:hover{transform:translateY(-2px);border-color:var(--brand)}
+.dcard.on{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,175,55,.35)}
+.dcard .dn{font-weight:800;font-size:17px;letter-spacing:-.01em;color:var(--brand2)}
+.dcard .dm{display:flex;gap:10px;margin-top:6px;font-size:12.5px;color:var(--ink2)}
+.dcard .dm b{color:var(--ink);font-size:16px;display:block;line-height:1.1}
+.dcard .crit{position:absolute;top:10px;right:10px}
+.snap{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:14px}
+footer{max-width:1180px;margin:10px auto 30px;padding:18px 20px;border-top:1px solid var(--line);color:var(--ink3);font-size:12.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+footer b{color:var(--ink2)}
 .brand h1{font-size:21px;margin:0;letter-spacing:-.02em;line-height:1.1}
 .brand small{display:block;color:#c7d2fe;font-size:12px;letter-spacing:.02em}
 .tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
@@ -72,7 +95,7 @@ input.in,select.in,textarea.in{width:100%;border:1.5px solid var(--line);border-
 input.in:focus,select.in:focus,textarea.in:focus{border-color:var(--brand);box-shadow:0 0 0 4px rgba(79,70,229,.13)}
 
 /* ---------- report hero ---------- */
-.hero{background:linear-gradient(135deg,#fff,#f5f3ff);border:1px solid #e0e7ff}
+.hero{background:linear-gradient(135deg,#fff,#f1f6fd);border:1px solid #d6e2f5;border-top:4px solid var(--gold)}
 .hero textarea{min-height:120px;resize:vertical;font-size:16px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
 .ex{border:1px dashed #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;transition:.15s}
@@ -95,7 +118,7 @@ button.place{cursor:pointer}button.place:hover{border-color:var(--brand);color:v
 .b.critical{background:var(--critical);color:#fff}.b.high{background:var(--high);color:#fff}.b.medium{background:#fef3c7;color:#92400e}.b.low{background:#d1fae5;color:#065f46}
 .b.st-new{background:#dbeafe;color:#1e40af}.b.st-in_progress{background:#ffedd5;color:#9a3412}.b.st-resolved{background:#d1fae5;color:#065f46}
 .b.st-closed{background:#e2e8f0;color:#334155}.b.st-reopened{background:#ffe4e6;color:#9f1239}.b.st-invalid{background:#e2e8f0;color:#64748b;text-decoration:line-through}
-.b.dept{background:#ede9fe;color:#5b21b6}.b.flag{background:#fee2e2;color:#991b1b}.b.you{background:#e0f2fe;color:#075985}.b.neutral{background:#f1f5f9;color:#475569}
+.b.dept{background:#dbeafe;color:#1e3a8a}.b.flag{background:#fee2e2;color:#991b1b}.b.you{background:#e0f2fe;color:#075985}.b.neutral{background:#f1f5f9;color:#475569}
 .b.conf{background:#4c1d95;color:#fff}
 
 /* ---------- issue cards ---------- */
@@ -163,27 +186,27 @@ pre.sum{white-space:pre-wrap;background:#f8fafc;border:1px solid var(--line);bor
 <header>
   <div class="hwrap">
     <div class="brand">
-      <div class="logo"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div>
-      <div><h1>ReportFix</h1><small>Campus problems · routed by AI · verified by students</small></div>
+      <div class="logo" id="logo"><img src="/mcs-logo.png" alt="Military College of Signals" onerror="this.parentNode.innerHTML=MONO"></div>
+      <div><div class="org">Military College of Signals</div><h1>ReportFix</h1><small>Campus problems · routed by AI · verified by students</small></div>
     </div>
     <div class="tools">
-      <div class="actas" title="Switch to any user in one click (no passwords)"><span class="avatar" id="avatar">?</span>
-        <select id="userSel" aria-label="Acting as"></select></div>
       <input id="newName" placeholder="New student name" aria-label="New student name">
       <button class="hbtn go" id="newBtn">+ Create student</button>
       <button class="hbtn danger" id="resetBtn">Reset all data</button>
     </div>
   </div>
+  <div class="quick" id="quick" aria-label="Switch user in one click"></div>
   <div class="whoRow" id="who"></div>
 </header>
 <nav><div class="seg" id="tabs"></div></nav>
 <div id="toast" role="status"></div>
 <main id="view"></main>
+<footer><span><b>ReportFix</b> · Military College of Signals</span><span>CodeQuest 2026 · AI Module · AI reads the text, plain code makes every decision</span></footer>
 
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let me = null, users = [], tab = null, places = [], lastReport = null;
+let me = null, users = [], tab = null, places = [], lastReport = null, deptFilter = null;
 const EXAMPLES = [
   'Lab 3 mein WiFi nahi chal raha',
   'There is a small fire near the printer in Lab 2, no rush',
@@ -191,7 +214,7 @@ const EXAMPLES = [
   'Library ka AC kharab hai, bohat garmi hai',
   'Wifi is not working in Lab 9',
 ];
-const ROLE_COLOR = { student: 'linear-gradient(135deg,#06b6d4,#3b82f6)', staff: 'linear-gradient(135deg,#f59e0b,#ef4444)', admin: 'linear-gradient(135deg,#8b5cf6,#ec4899)' };
+const ROLE_COLOR = { student: 'linear-gradient(135deg,#3b82f6,#1e4fa8)', staff: 'linear-gradient(135deg,#d4af37,#b8860b)', admin: 'linear-gradient(135deg,#334155,#0f172a)' };
 const initials = n => String(n || '?').split(/\s+/).filter(w => /^\p{L}/u.test(w.replace(/^\(/, ''))).map(w => w.replace(/^\(/, '')[0]).slice(0, 2).join('').toUpperCase() || '?';
 const avatar = (name, role, size) => `<span class="avatar" style="background:${ROLE_COLOR[role] || '#64748b'}${size ? `;width:${size}px;height:${size}px;font-size:${Math.round(size / 2.6)}px` : ''}">${esc(initials(name))}</span>`;
 const TIER_LABEL = { critical: 'Critical', high: 'High', medium: 'Medium', low: 'Low' };
@@ -207,20 +230,23 @@ async function api(path, opts = {}) {
 let toastT;
 function toast(m, kind = 'err') { const t = $('#toast'); t.textContent = m; t.className = 'show ' + kind; clearTimeout(toastT); toastT = setTimeout(() => t.className = '', 3200); }
 
+// Generic "MCS" monogram, shown only until the official logo file is placed at public/mcs-logo.png
+const MONO = '<svg width="52" height="52" viewBox="0 0 52 52" aria-label="MCS"><defs><linearGradient id="mg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#12315c"/><stop offset="1" stop-color="#050f1f"/></linearGradient></defs><path d="M26 3l20 6v15c0 12-8.5 20-20 25C14.5 44 6 36 6 24V9z" fill="url(#mg)" stroke="#d4af37" stroke-width="2"/><g fill="none" stroke="#d4af37" stroke-width="1.8" stroke-linecap="round"><path d="M17 17a13 13 0 0 1 18 0"/><path d="M20.5 20.5a8 8 0 0 1 11 0"/></g><circle cx="26" cy="24" r="1.8" fill="#d4af37"/><text x="26" y="41" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="13" fill="#fff" letter-spacing="1">MCS</text></svg>';
+
+const quickLabel = u => u.role === 'staff' ? u.dept : u.role === 'admin' ? 'Admin' : u.name.split(' ')[0];
 async function loadUsers() {
   users = await api('/users');
-  const sel = $('#userSel');
-  const groups = { student: 'Students', staff: 'Department staff', admin: 'Admin' };
-  sel.innerHTML = Object.entries(groups).map(([role, label]) =>
-    `<optgroup label="${label}">` + users.filter(u => u.role === role).map(u => `<option value="${u.id}">${esc(u.name)}${u.role === 'student' ? ' · trust ' + u.trust : ''}</option>`).join('') + '</optgroup>').join('');
   if (!users.find(u => u.id === localStorage.uid)) localStorage.uid = users.find(u => u.role === 'student').id;
-  sel.value = localStorage.uid;
+  const groups = { student: 'Students', staff: 'Departments', admin: 'Admin' };
+  $('#quick').innerHTML = Object.entries(groups).map(([role, label]) =>
+    `<div class="qgroup"><span class="qlabel">${label}</span>` + users.filter(u => u.role === role).map(u =>
+      `<button class="qchip ${u.id === localStorage.uid ? 'on' : ''}" data-u="${u.id}" title="${esc(u.name)}">${avatar(u.name, u.role)}${esc(quickLabel(u))}${u.role === 'student' ? ` <small>${u.trust}</small>` : ''}</button>`).join('') + '</div>').join('');
 }
+$('#quick').onclick = async e => { const b = e.target.closest('.qchip'); if (!b) return; localStorage.uid = b.dataset.u; lastReport = null; deptFilter = null; await loadUsers(); await setUser(); };
 function paintWho(u) {
-  const av = $('#avatar'); av.style.background = ROLE_COLOR[u.role]; av.textContent = initials(u.name);
   const roleTxt = u.role === 'staff' ? `${u.dept} staff` : u.role === 'admin' ? 'Admin' : 'Student';
   $('#who').innerHTML = `<span class="pill">${esc(roleTxt)}</span>` + (u.trust != null ? `<span class="pill">Trust ${u.trust} · vote weight ×${(Math.max(0.1, Math.min(2, u.trust / 50))).toFixed(1)}</span>` : '') +
-    `<span class="hint" style="opacity:.8">Judge mode: switch user above, create a student, or reset the data. No passwords.</span>`;
+    `<span class="hint" style="opacity:.8">Judge mode: click any chip above to switch user. No passwords.</span>`;
 }
 async function setUser() {
   me = await api('/me'); paintWho(me);
@@ -230,7 +256,6 @@ async function setUser() {
   render();
 }
 $('#tabs').onclick = e => { const b = e.target.closest('button'); if (b && b.dataset.t) { tab = b.dataset.t; lastReport = null; setUser(); } };
-$('#userSel').onchange = async e => { localStorage.uid = e.target.value; lastReport = null; await setUser(); };
 $('#newBtn').onclick = async () => {
   try { const u = await api('/users', { method: 'POST', body: { name: $('#newName').value || 'New Student' } }); $('#newName').value = ''; localStorage.uid = u.id; await loadUsers(); await setUser(); toast(`Created ${u.name} (trust 50)`, 'ok'); }
   catch (e) { toast(e.message); }
@@ -291,6 +316,25 @@ function statsBar(a) {
   return `<div class="stats">${s('c2', 'Open issues', open.length)}${s('c1', 'Critical', open.filter(i => i.tier === 'critical').length)}${s('c4', 'Awaiting student check', a.filter(i => i.status === 'resolved').length)}${s('c3', 'Closed (verified)', a.filter(i => i.status === 'closed').length)}</div>`;
 }
 
+const snapCard = (cls, label, n, sub) => `<div class="stat ${cls}"><span>${label}</span><b>${n}</b>${sub ? `<div class="tiny">${sub}</div>` : ''}</div>`;
+function studentSnap(a) {
+  const open = a.filter(i => ['new', 'in_progress', 'reopened'].includes(i.status)).length;
+  const vote = a.filter(i => i.canVote).length;
+  const fixed = a.filter(i => i.status === 'closed').length;
+  const w = Math.max(0.1, Math.min(2, me.trust / 50)).toFixed(1);
+  return `<div class="snap">${snapCard('c2', 'My trust score', me.trust, 'vote weight ×' + w)}${snapCard('c4', 'My open issues', open, 'being worked on')}${snapCard('c1', 'Needs my vote', vote, 'did the fix work?')}${snapCard('c3', 'Fixed & verified', fixed, 'confirmed by students')}</div>`;
+}
+const DEPT_LIST = ['EE', 'CSE', 'IS', 'Library', 'Cafeteria', 'Labs'];
+function deptCards(a) {
+  return `<div class="dgrid">${DEPT_LIST.map(d => {
+    const mine = a.filter(i => i.dept === d), open = mine.filter(i => ['new', 'in_progress', 'reopened'].includes(i.status));
+    const crit = open.filter(i => i.tier === 'critical').length, wait = mine.filter(i => i.status === 'resolved').length;
+    return `<button class="dcard ${deptFilter === d ? 'on' : ''}" onclick="setDept('${d}')">${crit ? `<span class="b critical crit">${crit} critical</span>` : ''}<div class="dn">${d}</div>
+      <div class="dm"><span><b>${open.length}</b>open</span><span><b>${wait}</b>to verify</span><span><b>${mine.length}</b>total</span></div></button>`;
+  }).join('')}</div>`;
+}
+window.setDept = d => { deptFilter = deptFilter === d ? null : d; render(); };
+
 // Only touch the page when the content really changed, so live refresh never eats a click.
 const viewEl = $('#view'); let lastHtml = null;
 const viewProxy = { set innerHTML(h) { if (h === lastHtml) return; lastHtml = h; viewEl.innerHTML = h; }, get innerHTML() { return viewEl.innerHTML; } };
@@ -299,7 +343,8 @@ async function render() {
   try {
     if (tab === 'Report') {
       if (!places.length) places = (await api('/meta')).places;
-      v.innerHTML = `<div class="card hero"><h2>What's broken on campus?</h2>
+      const snap = studentSnap(await api('/issues?scope=mine'));
+      v.innerHTML = snap + `<div class="card hero"><h2>What's broken on campus?</h2>
         <p class="muted" style="margin:0 0 12px">Write it your way: English, Roman Urdu or a mix, typos and all. Say what is wrong and where.</p>
         <textarea class="in" id="txt" placeholder="e.g. Lab 3 mein WiFi nahi chal raha"></textarea>
         <div class="chips"><span class="tiny" style="align-self:center">Try:</span>${EXAMPLES.map(x => `<button class="ex" data-ex="${esc(x)}">${esc(x)}</button>`).join('')}</div>
@@ -310,14 +355,15 @@ async function render() {
       $('#sendBtn').onclick = submit;
       document.querySelectorAll('.ex').forEach(b => b.onclick = () => { $('#txt').value = b.dataset.ex; $('#txt').focus(); });
     } else if (tab === 'My issues') {
-      const a = await api('/issues?scope=mine'); v.innerHTML = a.length ? a.map(i => issueCard(i)).join('') : emptyState('Nothing yet', 'Issues you report or join show up here with live status.');
+      const a = await api('/issues?scope=mine'); v.innerHTML = studentSnap(a) + (a.length ? a.map(i => issueCard(i)).join('') : emptyState('Nothing yet', 'Issues you report or join show up here with live status.'));
     } else if (tab === 'Public board') {
       const a = await api('/issues?scope=public'); v.innerHTML = a.length ? `<p class="muted" style="margin-top:0">Most important first. Hit "Me too" if you are affected too.</p>` + a.map(i => issueCard(i)).join('') : emptyState('No issues on the board', 'Be the first to report a problem.');
     } else if (tab === 'My trust') { await showTrust(me.id, v); }
     else if (tab === 'Queue') {
       const a = await api('/issues?scope=dept'); v.innerHTML = `<h2>${esc(me.dept)} queue</h2><p class="muted" style="margin-top:0">Most important first. You only see ${esc(me.dept)} issues.</p>` + statsBar(a) + (a.length ? a.map(i => issueCard(i)).join('') : emptyState('Queue is empty', 'New reports for your department appear here.'));
     } else if (tab === 'All issues') {
-      const a = await api('/issues?scope=dept'); v.innerHTML = `<h2>All departments</h2>` + statsBar(a) + (a.length ? a.map(i => issueCard(i)).join('') : emptyState('No issues yet', 'Switch to a student and file a report.'));
+      const all = await api('/issues?scope=dept'); const a = deptFilter ? all.filter(i => i.dept === deptFilter) : all;
+      v.innerHTML = `<h2>All departments</h2><p class="muted" style="margin-top:0">Click a department card to filter${deptFilter ? ` (showing ${esc(deptFilter)}, click again to clear)` : ''}.</p>` + statsBar(all) + deptCards(all) + (a.length ? a.map(i => issueCard(i)).join('') : emptyState('No issues yet', 'Switch to a student and file a report.'));
     } else if (tab === 'Confidential') {
       const a = await api('/issues?scope=confidential'); v.innerHTML = `<div class="card" style="background:#faf5ff;border-color:#ddd6fe"><b>Admin-only.</b> <span class="muted">Harassment and ragging cases never appear on a public board, never reach a department, and the reporter is never revealed.</span></div>` + (a.length ? a.map(i => issueCard(i, 'admin')).join('') : emptyState('No confidential cases', ''));
     } else if (tab === 'Users & trust') {

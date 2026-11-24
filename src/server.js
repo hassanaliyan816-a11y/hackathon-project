@@ -9,7 +9,7 @@ const LLM = require('./llm');
 const { PLACES, DEPTS } = require('./campus');
 
 const PUB = path.join(__dirname, '..', 'public');
-const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css' };
+const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml', '.webp': 'image/webp' };
 
 function send(res, status, obj) {
   const body = JSON.stringify(obj);
