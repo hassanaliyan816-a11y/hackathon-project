@@ -59,6 +59,12 @@ async function handle(req, res) {
       if (user.role === 'student' && user.id !== mm[1]) throw new L.HttpError(403, 'You can only view your own trust history.');
       return send(res, 200, L.trustView(mm[1]));
     }
+    if (p === '/api/export' && m === 'POST') {
+      const b = await readBody(req);
+      const out = await require('./report').buildReport(user, Array.isArray(b.ids) ? b.ids.map(Number).filter(Number.isFinite) : []);
+      res.writeHead(200, { 'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'Content-Disposition': `attachment; filename="${out.filename}"`, 'Content-Length': out.buffer.length, 'Cache-Control': 'no-store', 'Access-Control-Expose-Headers': 'Content-Disposition', 'X-Report-AI': out.aiUsed ? 'yes' : 'no' });
+      return res.end(out.buffer);
+    }
     if (p === '/api/trending') return send(res, 200, L.trending());
     if (p === '/api/admin/summary' && m === 'POST') { if (user.role !== 'admin') throw new L.HttpError(403, 'Admin only.'); return send(res, 200, await L.adminSummary()); }
     throw new L.HttpError(404, 'No such endpoint.');

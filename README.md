@@ -46,3 +46,7 @@ To use the official logo: copy the college's logo file to `public/mcs-logo.png` 
 
 ## Verification window
 After staff mark an issue resolved, affected students have 30 minutes (change with the environment variable `REPORTFIX_VERIFY_MIN`, e.g. `2` for a short demo) to dispute it. A reopen needs at least one credible disputer (trust >= 30). If nobody credibly disputes, the issue closes automatically.
+
+## Word export (admin)
+Admin > All issues: **Export Word (.docx)** on any issue card (confidential cases too, reporter identity withheld) or **Export all active issues**.
+The AI drafts the wording (subject, description of the issue, impact, recommended action) from system data; every count (students who reported/joined, credible supporters, verification confirm/dispute votes) is computed by code, not the AI. If the AI is unavailable a template text is used. Only the admin can export (students and staff get 403).

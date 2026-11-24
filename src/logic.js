@@ -367,4 +367,21 @@ function createStudent(name) {
   return u;
 }
 
-module.exports = { tick, HttpError, userById, submitReport, join, vote, setStatus, reassign, listIssues, viewIssue, trustView, trending, adminSummary, createStudent, importance, issueById };
+// Data for the admin's Word export: full views plus the verification figures and report count.
+function exportViews(user, ids) {
+  if (user.role !== 'admin') throw new HttpError(403, 'Only the admin can export reports.');
+  let issues;
+  if (Array.isArray(ids) && ids.length) {
+    issues = ids.map(n => issueById(n)).filter(Boolean);
+    if (!issues.length) throw new HttpError(404, 'Issue not found.');
+  } else issues = db().issues.filter(i => !i.confidential && ['new', 'in_progress', 'reopened', 'resolved'].includes(i.status));
+  if (!issues.length) throw new HttpError(404, 'There are no active issues to export.');
+  return issues.slice(0, 25).map(i => {
+    const v = viewIssue(i, user);
+    v.createdAt = i.createdAt;
+    if (!i.confidential && ['resolved', 'closed'].includes(i.status)) { const ev = evalVotes(i); v.verification = { affected: ev.affected, confirms: ev.confirmers, disputes: ev.disputers }; }
+    return v;
+  });
+}
+
+module.exports = { exportViews, tick, HttpError, userById, submitReport, join, vote, setStatus, reassign, listIssues, viewIssue, trustView, trending, adminSummary, createStudent, importance, issueById };

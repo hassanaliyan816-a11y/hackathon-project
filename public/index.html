@@ -27,13 +27,13 @@ button:active:not(:disabled){transform:scale(.97)}
 
 /* ============ NAV BAR ============ */
 /* Tall banner: the campus photo + a navy gradient. The title area scrolls away; the nav bar stays pinned (sticky top = -title height). */
-.top{--ht:136px;position:sticky;top:calc(var(--ht) * -1);z-index:60;background:#07162b;color:#fff;border-bottom:3px solid var(--gold);box-shadow:0 12px 32px -12px rgba(5,15,31,.8)}
+.top{--bh:84px;--hh:98px;--ht:calc(var(--bh) + var(--hh));position:sticky;top:calc(var(--ht) * -1);z-index:60;background:#2a170c;color:#fff;border-bottom:3px solid var(--gold);box-shadow:0 12px 32px -12px rgba(20,10,4,.85)}
+.brandrow{position:relative;z-index:1;height:var(--bh);max-width:1200px;margin:0 auto;padding:0 20px;display:flex;align-items:center}
 .top::before{content:"";position:absolute;inset:0;background:url(/campus.jpg) center 40%/cover no-repeat;z-index:0}
 .top::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background:
-  repeating-linear-gradient(135deg,rgba(255,255,255,.03) 0 2px,transparent 2px 14px),
-  linear-gradient(to top,rgba(5,15,31,.78) 0%,rgba(5,15,31,.05) 42%,rgba(5,15,31,0) 100%),
-  linear-gradient(100deg,rgba(5,15,31,.86) 0%,rgba(11,42,91,.6) 36%,rgba(20,64,127,.2) 70%,rgba(11,42,91,.34) 100%)}
-.herotitle{position:relative;z-index:1;height:var(--ht);max-width:1200px;margin:0 auto;padding:0 20px;display:flex;flex-direction:column;justify-content:center;gap:4px}
+  linear-gradient(to top,rgba(30,16,8,.72) 0%,rgba(30,16,8,0) 45%),
+  linear-gradient(100deg,rgba(36,19,10,.92) 0%,rgba(78,44,22,.7) 40%,rgba(62,34,18,.4) 75%,rgba(40,22,12,.5) 100%)}
+.herotitle{position:relative;z-index:1;height:var(--hh);max-width:1200px;margin:0 auto;padding:0 20px;display:flex;flex-direction:column;justify-content:center;gap:4px}
 .herotitle .eyebrow{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold2);font-weight:800;text-shadow:0 1px 8px rgba(0,0,0,.6)}
 .herotitle .big{margin:0;font-size:clamp(26px,4vw,40px);letter-spacing:-.025em;line-height:1.1;font-weight:800;text-shadow:0 2px 18px rgba(0,0,0,.6)}
 .herotitle .big em{font-style:normal;color:var(--gold2)}
@@ -255,7 +255,7 @@ footer b{color:var(--ink2)}
   .welcome .hint{margin-left:0;max-width:none}
   .welcome h2{font-size:24px}
 }
-@media (max-width:560px){.top{--ht:96px}.herotitle .sub{display:none}.herotitle .eyebrow{font-size:10.5px}.brand .org{display:none}.mbtn .cur{display:none}.wrap,main,nav.tabsnav{padding-left:14px;padding-right:14px}.acts input.in{width:100%}}
+@media (max-width:560px){.top{--bh:66px;--hh:78px}.herotitle .sub{display:none}.herotitle .eyebrow{font-size:10.5px}.brand .org{display:none}.mbtn .cur{display:none}.wrap,main,nav.tabsnav{padding-left:14px;padding-right:14px}.acts input.in{width:100%}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
@@ -264,16 +264,18 @@ footer b{color:var(--ink2)}
 <div id="cur" aria-hidden="true"></div><div id="cdot" aria-hidden="true"></div>
 
 <header class="top">
+  <div class="brandrow">
+    <a class="brand" href="#" aria-label="ReportFix home">
+      <div class="logo" id="logo"><img src="/mcs-logo.png" alt="Military College of Signals" onerror="this.parentNode.innerHTML=MONO"></div>
+      <div><div class="org">Military College of Signals</div><h1>ReportFix</h1></div>
+    </a>
+  </div>
   <div class="herotitle">
     <div class="eyebrow">Campus issue resolution portal</div>
     <div class="big">Report it. Route it. <em>Fix it.</em> Verify it.</div>
     <p class="sub">Military College of Signals · problems read by AI, decided by rules, confirmed by students</p>
   </div>
   <div class="bar">
-    <a class="brand" href="#" aria-label="ReportFix home">
-      <div class="logo" id="logo"><img src="/mcs-logo.png" alt="Military College of Signals" onerror="this.parentNode.innerHTML=MONO"></div>
-      <div><div class="org">Military College of Signals</div><h1>ReportFix</h1></div>
-    </a>
     <nav class="menus" id="menus" aria-label="Sign in as"></nav>
     <div class="barright"><button class="rbtn" id="resetBtn" type="button">Reset all data</button></div>
   </div>
@@ -433,7 +435,7 @@ function issueCard(i, mode) {
     return `<div class="card spot issue confc"><div class="ihead"><span class="id">#${i.id}</span><span class="ttl">${esc(i.title)}</span> ${badge('conf', 'Confidential')} ${badge('st-' + i.status, STATUS_LABEL[i.status] || i.status)}</div>
       <div class="reason">${esc(i.reason || '')}</div>
       ${(i.texts || []).map(t => `<div class="quote"><small>${esc(t.reporter)}</small>${esc(t.text)}</div>`).join('')}
-      ${mode === 'admin' && i.status !== 'closed' ? `<div class="acts"><button class="sbtn ok" onclick="act(${i.id},'resolved')">Close case</button></div>` : ''}
+      ${mode === 'admin' ? `<div class="acts">${i.status !== 'closed' ? `<button class="sbtn ok" onclick="act(${i.id},'resolved')">Close case</button>` : ''}<button class="sbtn" onclick="exportDoc(${i.id})">Export Word (.docx)</button></div>` : ''}
       ${i.history ? `<details><summary>Activity</summary><ul class="tl">${i.history.map(h => `<li>${esc(h.text)}</li>`).join('')}</ul></details>` : ''}</div>`;
   }
   const staffLike = me.role === 'staff' || me.role === 'admin';
@@ -446,6 +448,7 @@ function issueCard(i, mode) {
     if (['new', 'reopened'].includes(i.status)) acts += `<button class="sbtn solid" onclick="act(${i.id},'in_progress')">Start work</button>`;
     if (['new', 'in_progress', 'reopened'].includes(i.status)) acts += `<input class="in" id="note-${i.id}" placeholder="What was done? (shown to students)" aria-label="Resolution note"> <button class="sbtn ok" onclick="resolve(${i.id})">Mark resolved</button>`;
     if (!['closed', 'invalid'].includes(i.status)) acts += `<button class="sbtn bad" onclick="act(${i.id},'invalid')">Mark fake / spam</button>`;
+    if (me.role === 'admin') acts += `<button class="sbtn" onclick="exportDoc(${i.id})" title="AI-written report as a Word document">Export Word (.docx)</button>`;
     if (me.role === 'admin') acts += `<select class="in" aria-label="Reassign department" onchange="reassign(${i.id},this.value)"><option value="">Reassign…</option>${['EE', 'CSE', 'IS', 'Library', 'Cafeteria', 'Labs'].map(d => `<option>${d}</option>`).join('')}</select>`;
   }
   const vp = i.voteProgress;
@@ -530,7 +533,7 @@ async function render() {
       const a = await api('/issues?scope=dept'); v.innerHTML = `<h2 class="sec">${esc(me.dept)} queue</h2><p class="muted" style="margin-top:0">Most important first. You only see ${esc(me.dept)} issues.</p>` + statsBar(a) + (a.length ? a.map(i => issueCard(i)).join('') : emptyState('Queue is empty', 'New reports for your department appear here.'));
     } else if (tab === 'All issues') {
       const all = await api('/issues?scope=dept'); const a = deptFilter ? all.filter(i => i.dept === deptFilter) : all;
-      v.innerHTML = `<h2 class="sec">All departments</h2><p class="muted" style="margin-top:0">Click a department card to filter${deptFilter ? ` (showing ${esc(deptFilter)}, click again to clear)` : ''}.</p>` + statsBar(all) + deptCards(all) + (a.length ? a.map(i => issueCard(i)).join('') : emptyState('No issues yet', 'Sign in as a student and file a report.'));
+      v.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><h2 class="sec">All departments</h2><button class="btn pri" onclick="exportDoc()" title="One Word document with every active issue">Export all active issues (Word)</button></div><p class="muted" style="margin-top:0">Click a department card to filter${deptFilter ? ` (showing ${esc(deptFilter)}, click again to clear)` : ''}. Each issue card has its own Word export.</p>` + statsBar(all) + deptCards(all) + (a.length ? a.map(i => issueCard(i)).join('') : emptyState('No issues yet', 'Sign in as a student and file a report.'));
     } else if (tab === 'Confidential') {
       const a = await api('/issues?scope=confidential'); v.innerHTML = `<div class="card" style="background:#faf5ff;border-color:#ddd6fe"><b>Admin-only.</b> <span class="muted">Harassment and ragging cases never appear on a public board, never reach a department, and the reporter is never revealed.</span></div>` + (a.length ? a.map(i => issueCard(i, 'admin')).join('') : emptyState('No confidential cases', ''));
     } else if (tab === 'Users & trust') {
@@ -588,6 +591,17 @@ window.addPlace = p => { const t = $('#txt'); t.value = t.value.trim() + ' (' + 
 window.join = async id => { try { await api(`/issues/${id}/join`, { method: 'POST' }); haptic('success'); await setUser(); toast('You are counted on this issue', 'ok'); } catch (e) { toast(e.message); } };
 window.vote = async (id, v) => { try { await api(`/issues/${id}/vote`, { method: 'POST', body: { vote: v } }); haptic('success'); await setUser(); toast('Vote recorded', 'ok'); } catch (e) { toast(e.message); } };
 window.act = async (id, status, note) => { try { await api(`/issues/${id}/status`, { method: 'POST', body: { status, note } }); haptic('success'); await render(); } catch (e) { toast(e.message); } };
+// Admin: download an AI-written Word report for one issue (id) or all active issues (no id).
+window.exportDoc = async id => {
+  toast('Preparing the report: the AI is drafting it…', 'ok');
+  try {
+    const r = await fetch('/api/export', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': localStorage.uid || '' }, body: JSON.stringify(id ? { ids: [id] } : {}) });
+    if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.error || 'Export failed'); }
+    const blob = await r.blob(); const m = /filename="([^"]+)"/.exec(r.headers.get('Content-Disposition') || ''); const name = m ? m[1] : 'ReportFix-report.docx';
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+    haptic('success'); toast('Downloaded ' + name + (r.headers.get('X-Report-AI') === 'yes' ? ' (AI-written)' : ' (template text, AI unavailable)'), 'ok');
+  } catch (e) { toast(e.message); }
+};
 window.resolve = id => { const el = document.getElementById('note-' + id); act(id, 'resolved', el ? el.value : ''); };
 window.reassign = async (id, dept) => { if (!dept) return; try { await api(`/issues/${id}/reassign`, { method: 'POST', body: { dept } }); haptic('success'); await render(); toast('Reassigned to ' + dept, 'ok'); } catch (e) { toast(e.message); } };
 

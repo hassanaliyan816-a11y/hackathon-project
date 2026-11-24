@@ -88,4 +88,13 @@ async function summarize(digest) {
   return content ? content.trim() : null;
 }
 
-module.exports = { enabled, extract, summarize, state };
+// Free-text drafting for the Word export. Returns a parsed JSON object or null.
+async function writeReport(system, factsJson) {
+  const content = await chat([{ role: 'system', content: system }, { role: 'user', content: '<facts>\n' + String(factsJson).replace(/<\/?\s*facts\s*>/gi, ' ').slice(0, 6000) + '\n</facts>' }], { json: true, maxTokens: 700 });
+  const j = parseJson(content);
+  if (!j || typeof j !== 'object') return null;
+  const s = v => (typeof v === 'string' ? v.slice(0, 900) : null);
+  return { subject: s(j.subject), description: s(j.description), impact: s(j.impact), recommended_action: s(j.recommended_action) };
+}
+
+module.exports = { enabled, extract, summarize, writeReport, state };
